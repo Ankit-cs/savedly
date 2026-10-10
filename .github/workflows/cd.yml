@@ -101,7 +101,15 @@ jobs:
       - name: Pull the image and restart
         run: |
           ssh -i ~/.ssh/deploy_key "$EC2_USER@$EC2_HOST" \
-            "cd $APP_DIR && IMAGE_TAG=$IMAGE_TAG docker compose pull server && IMAGE_TAG=$IMAGE_TAG docker compose up -d --wait --wait-timeout 300 && docker image prune -f >/dev/null"
+            "cd $APP_DIR && IMAGE_TAG=$IMAGE_TAG docker compose pull server && IMAGE_TAG=$IMAGE_TAG docker compose up -d --wait --wait-timeout 300 server redis caddy && docker image prune -f >/dev/null"
+
+      # The optional server-health agent (deploy/aws/docker-compose.yml). Started
+      # apart from the app and never waited on, so a monitoring problem (a wrong
+      # key, New Relic unreachable) can't fail a deploy.
+      - name: Start monitoring, if it is switched on
+        run: |
+          ssh -i ~/.ssh/deploy_key "$EC2_USER@$EC2_HOST" \
+            "cd $APP_DIR && if grep -q '^COMPOSE_PROFILES=.*monitoring' .env 2>/dev/null; then docker compose up -d newrelic-infra || true; fi"
 
       - name: Show the API log if the deploy failed
         if: failure()
