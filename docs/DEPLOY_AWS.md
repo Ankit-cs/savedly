@@ -40,7 +40,7 @@ Replace `KEY_FILE` with the path to the key pair's private key, and `ELASTIC_IP`
 
    ```sh
    ssh -i KEY_FILE ubuntu@ELASTIC_IP
-   curl -fsSL https://raw.githubusercontent.com/jyotishankar04/saveforlatter/main/deploy/aws/bootstrap.sh | bash
+   curl -fsSL https://raw.githubusercontent.com/jyotishankar04/savedly/main/deploy/aws/bootstrap.sh | bash
    exit
    ```
 
@@ -67,8 +67,10 @@ Merging into `prod-server` deploys. See [Release process](./RELEASE_PROCESS.md) 
 The first deploy needs one extra step, because the image package starts out private and the instance can't pull it:
 
 1. Merge the release PR into `prod-server`. The `build` job pushes the image; the `deploy` job fails at the pull.
-2. On GitHub, open the `saveforlatter-server` package and set its visibility to **Public**.
+2. On GitHub, open the `savedly-server` package and set its visibility to **Public**.
 3. In **Actions** > **Deploy API**, click **Re-run failed jobs**.
+
+The image is pushed under two names: `savedly-server`, and `saveforlatter-server`, its name before the product was renamed. The deploy pulls `savedly-server` and falls back to the old name when it can't, with a warning on the run. Older versions exist only under the old name, so keep that package until you no longer need to roll back to them.
 
 To confirm the deploy, run the following command. It prints `200`:
 
