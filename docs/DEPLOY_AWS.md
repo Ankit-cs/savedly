@@ -155,6 +155,56 @@ Restore into a new, empty database first, and check it, before you point the API
 
 Practise a restore once before you need one. A backup you have never restored is not yet a backup.
 
+## Monitoring
+
+Three things watch production. Each is optional and off until you set it up.
+
+| What | Tool | Tells you |
+|---|---|---|
+| Errors | Sentry | A request, page or background job failed, and where in the code. |
+| Server health | New Relic agent | CPU, memory and disk on the instance, per container. |
+| Uptime | New Relic synthetic monitor | The API or the site stopped answering. |
+
+### Errors (Sentry)
+
+1. In Sentry, create a Node.js project for the API and a Next.js project for the site.
+2. Add the API project's DSN to `.env.prod` on the instance as `SENTRY_DSN=...`, then redeploy.
+3. Add the site project's DSN to the site's build settings as `NEXT_PUBLIC_SENTRY_DSN=...`, then rebuild. It is read at build time.
+4. In Sentry, create an alert for "A new issue is created" so new errors reach your email.
+
+Reports hold the error, its stack, the route or page path, and the account ID. Request bodies, cookies, headers and query strings are removed. Session replay and tracing are not enabled. See `server/src/config/sentry.ts` and `client/lib/sentry-options.ts`.
+
+### Server health (New Relic)
+
+1. In New Relic, copy an **ingest license key** (API keys → type "INGEST - LICENSE").
+2. On the instance, create `/opt/saveforlatter/.env` with these two lines. This is the file Docker Compose reads for itself; it is not `.env.prod`.
+
+   ```
+   COMPOSE_PROFILES=monitoring
+   NEW_RELIC_LICENSE_KEY=<the license key>
+   ```
+
+3. Start the agent:
+
+   ```sh
+   cd /opt/saveforlatter && docker compose up -d newrelic-infra
+   ```
+
+The instance appears in New Relic under **Infrastructure → Hosts** as `savedly-api` within a few minutes. Later deploys keep the agent running and never wait on it.
+
+The agent reads the host, so it runs with host access. It sends metrics only.
+
+To turn it off, delete the `COMPOSE_PROFILES` line and run `docker compose rm -sf newrelic-infra`.
+
+### Uptime (New Relic synthetic monitors)
+
+Create two **Ping** monitors, every 5 minutes, with an email alert on failure:
+
+- `https://api.savedly.app/api/v1/health/ready` checks the API, its database and Redis.
+- `https://savedly.app` checks the site.
+
+Use `/health/ready` and not `/health`: `/health` answers as long as the process is up, even when the database is unreachable.
+
 ## Measure latency
 
 To see how long the API's calls to Postgres, Redis and Pinecone take from the instance, copy `deploy/aws/latency-probe.sh` to the instance and run it:

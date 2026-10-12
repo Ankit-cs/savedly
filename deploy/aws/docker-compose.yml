@@ -82,6 +82,38 @@ services:
     mem_limit: 128m
     logging: *logging
 
+  # Server health for New Relic: CPU, memory, disk and each container's
+  # usage. Optional. It starts only when /opt/saveforlatter/.env (the file
+  # compose itself reads, not .env.prod) has both lines:
+  #
+  #   COMPOSE_PROFILES=monitoring
+  #   NEW_RELIC_LICENSE_KEY=<ingest license key>
+  #
+  # It reads the host, so it runs with host access, as New Relic's own
+  # install does. It sends metrics only: no application logs, no request
+  # data. See docs/DEPLOY_AWS.md, "Monitoring".
+  newrelic-infra:
+    image: newrelic/infrastructure:latest
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    cap_add:
+      - SYS_PTRACE
+    network_mode: host
+    pid: host
+    privileged: true
+    environment:
+      NRIA_LICENSE_KEY: ${NEW_RELIC_LICENSE_KEY:-}
+      NRIA_DISPLAY_NAME: savedly-api
+      # Process names and usage, without their command lines (which can
+      # hold arguments worth keeping private).
+      NRIA_ENABLE_PROCESS_METRICS: "true"
+      NRIA_STRIP_COMMAND_LINE: "true"
+    volumes:
+      - /:/host:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    mem_limit: 128m
+    logging: *logging
+
 volumes:
   redis_data:
   caddy_data:
