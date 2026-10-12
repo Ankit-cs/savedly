@@ -8,6 +8,7 @@ import {
   ArrowRight01Icon as ArrowRightIcon,
   BookmarkAdd01Icon as SaveIcon,
   BubbleChatIcon as AskIcon,
+  Cancel01Icon as CloseIcon,
   FolderLibraryIcon as OrganizeIcon,
   Search01Icon as SearchIcon,
 } from "@hugeicons/core-free-icons";
@@ -146,6 +147,7 @@ function Switcher() {
   const top = useTransform(grow, (g) => `${(16 + (1 - g) * 76).toFixed(2)}px`);
   const bottom = useTransform(grow, (g) => `${(16 + (1 - g) * 28).toFixed(2)}px`);
   const radius = useTransform(grow, (g) => `${(36 + (1 - g) * 4).toFixed(2)}px`);
+  const skipClickable = useTransform(grow, (g) => (g > 0.6 ? "auto" : "none"));
 
   // Wide screens: the scroll position picks the scene.
   useMotionValueEvent(scrollYProgress, "change", (progress) => {
@@ -175,6 +177,15 @@ function Switcher() {
     }
   }
 
+  /** Past the whole pinned stretch in one step, for anyone who doesn't want to scroll through it. */
+  function skip() {
+    const el = track.current;
+    if (!el) return;
+    const end = el.getBoundingClientRect().top + window.scrollY + el.offsetHeight;
+    // Instant on purpose: a smooth scroll would play every scene on the way.
+    window.scrollTo({ top: end - 72, behavior: "instant" });
+  }
+
   const tab = TABS[active];
   const Scene = tab.Scene;
 
@@ -189,6 +200,21 @@ function Switcher() {
           )}
         >
           <Backdrop tones={tab.tones} />
+
+          {pinned && (
+            <motion.button
+              type="button"
+              onClick={skip}
+              aria-label="Skip to the next section"
+              title="Skip"
+              // Appears as the panel grows, and can't be tabbed to or clicked before then.
+              style={{ opacity: grow, pointerEvents: skipClickable }}
+              // Below the navigation bar: its strip spans the full width and would take the click.
+              className="absolute right-6 top-[5.5rem] z-20 flex h-11 w-11 items-center justify-center rounded-xl bg-card/60 text-foreground/70 ring-1 ring-foreground/10 backdrop-blur transition-colors hover:bg-card hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+            >
+              <HugeiconsIcon icon={CloseIcon} strokeWidth={2} className="h-5 w-5" />
+            </motion.button>
+          )}
 
           <div role="tablist" aria-label="What Savedly does" className="relative z-10 flex gap-2">
             {TABS.map((t, i) => {
