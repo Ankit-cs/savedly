@@ -13,7 +13,9 @@ name: saveforlatter-api
 
 services:
   server:
-    image: ghcr.io/jyotishankar04/saveforlatter-server:${IMAGE_TAG:-latest}
+    # IMAGE_NAME is set by the deploy (cd.yml), which falls back to the
+    # image's old name, saveforlatter-server, when the new one can't be pulled.
+    image: ghcr.io/jyotishankar04/${IMAGE_NAME:-savedly-server}:${IMAGE_TAG:-latest}
     restart: unless-stopped
     init: true
     env_file:
