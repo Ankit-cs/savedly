@@ -8,7 +8,7 @@ import { helpAskDailyRateLimiter, helpAskMinuteRateLimiter } from "../../shared/
 import { validate } from "../../shared/middlewares/validate";
 import { ApiResponse } from "../../shared/response/api-response";
 import { logger } from "../../shared/utils/logger";
-import { answerHelpQuestion } from "./help-assistant.graph";
+import { answerHelpQuestion, streamHelpAnswer } from "./help-assistant.graph";
 
 // Mounted at /help. Public: the website's help box, for visitors who aren't
 // signed in. Three things keep it from being an open tap on the AI account:
@@ -18,6 +18,7 @@ const router = Router();
 
 const askSchema = z.object({ question: z.string().trim().min(3).max(300) });
 
+const UNAVAILABLE = "The help box isn't available right now. Please try the Help Center.";
 const BUSY = "The help box has answered a lot of questions today. Please try the Help Center, or write to us.";
 
 /** Counts today's questions from everyone. False once the day's total is used up. */
@@ -35,15 +36,41 @@ async function withinDailyBudget(): Promise<boolean> {
   }
 }
 
+/**
+ * POST /help/ask. With `Accept: text/event-stream` the answer arrives as it
+ * is written ("delta" events, then one "done"); otherwise as one JSON reply.
+ */
 router.post("/ask", helpAskMinuteRateLimiter, helpAskDailyRateLimiter, validate(askSchema), async (req: Request, res: Response) => {
   if (!(await withinDailyBudget())) throw new AppError(BUSY, 429, "HELP_BUSY");
   const { question } = req.body as z.infer<typeof askSchema>;
-  try {
-    res.status(200).json(ApiResponse.success(await answerHelpQuestion(question)));
-  } catch (err) {
-    logger.warn({ err: (err as Error).message }, "[help] couldn't answer a question");
-    throw new AppError("The help box isn't available right now. Please try the Help Center.", 503, "HELP_UNAVAILABLE");
+
+  if (!req.accepts(["json", "text/event-stream"]) || req.headers.accept?.includes("text/event-stream") !== true) {
+    try {
+      res.status(200).json(ApiResponse.success(await answerHelpQuestion(question)));
+    } catch (err) {
+      logger.warn({ err: (err as Error).message }, "[help] couldn't answer a question");
+      throw new AppError(UNAVAILABLE, 503, "HELP_UNAVAILABLE");
+    }
+    return;
   }
+
+  // Stops the model when the visitor presses stop or leaves the page.
+  const abort = new AbortController();
+  res.on("close", () => {
+    if (!res.writableEnded) abort.abort();
+  });
+  res.status(200).set({ "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache, no-transform", Connection: "keep-alive", "X-Accel-Buffering": "no" });
+  res.flushHeaders();
+  const send = (event: unknown) => res.write(`data: ${JSON.stringify(event)}\n\n`);
+  try {
+    for await (const event of streamHelpAnswer(question, abort.signal)) send(event);
+  } catch (err) {
+    if (!abort.signal.aborted) {
+      logger.warn({ err: (err as Error).message }, "[help] couldn't answer a question");
+      send({ type: "error", message: UNAVAILABLE });
+    }
+  }
+  res.end();
 });
 
 export default router;
