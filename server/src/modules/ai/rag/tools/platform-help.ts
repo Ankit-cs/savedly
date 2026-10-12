@@ -88,6 +88,25 @@ function score(guide: HelpGuide, query: Set<string>): number {
   return total;
 }
 
+/**
+ * The guides and tools that best answer a question: the best-matching guide,
+ * a second one only when it's nearly as relevant, and any tool the question
+ * names. Shared by the assistant's tool below and the public help box
+ * (modules/help-assistant), which passes a higher `minScore` so one stray
+ * shared word doesn't count as a match.
+ */
+export async function findHelp(question: string, minScore = 1): Promise<{ topics: HelpGuide[]; relatedTools: HelpTool[] }> {
+  const { guides, tools } = await loadHelp();
+  const query = queryTokens(question);
+  const ranked = guides
+    .map((guide) => ({ guide, s: score(guide, query) }))
+    .filter((r) => r.s >= minScore)
+    .sort((a, b) => b.s - a.s);
+  const topics = ranked.filter((r, i) => i === 0 || (i === 1 && r.s >= ranked[0].s * 0.6)).map((r) => r.guide);
+  const relatedTools = tools.filter((t) => [...tokens(`${t.title} ${t.summary}`)].some((w) => query.has(w)));
+  return { topics, relatedTools };
+}
+
 const inputSchema = z.object({
   question: z.string().min(1).describe("The user's question about how to use Savedly, in their own words."),
 });
@@ -98,15 +117,7 @@ const inputSchema = z.object({
 // the tool's artifact and renders them as buttons (client/components/ask/help-actions.tsx).
 export const platformHelpTool = tool(
   async ({ question }: z.infer<typeof inputSchema>) => {
-    const { guides, tools } = await loadHelp();
-    const query = queryTokens(question);
-    const ranked = guides
-      .map((guide) => ({ guide, s: score(guide, query) }))
-      .filter((r) => r.s > 0)
-      .sort((a, b) => b.s - a.s);
-    // A second guide only when it's nearly as relevant as the best one.
-    const top = ranked.filter((r, i) => i === 0 || (i === 1 && r.s >= ranked[0].s * 0.6)).map((r) => r.guide);
-    const relatedTools = tools.filter((t) => [...tokens(`${t.title} ${t.summary}`)].some((w) => query.has(w)));
+    const { topics: top, relatedTools } = await findHelp(question);
 
     const buttons = [...top.flatMap((g) => g.actions.map((a) => a.label)), ...relatedTools.map((t) => t.title), ...top.map((g) => `Guide: ${g.title}`)];
     const forModel = {
