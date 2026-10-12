@@ -198,8 +198,8 @@ export function OpenSection() {
           </div>
 
           <div className="relative overflow-hidden rounded-[2rem] bg-muted/70 sm:rounded-[2.5rem]">
-            {/* The Help Center's screenshot for this step, whole, rising from the panel's foot. */}
-            <div className="relative mx-[6%] mt-[7%] aspect-[1280/800] overflow-hidden rounded-t-2xl bg-white shadow-xl ring-1 ring-foreground/[0.07]">
+            {/* The Help Center's screenshot for this step, whole, framed in the panel. */}
+            <div className="relative mx-[6%] my-[7%] aspect-[1280/800] overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-foreground/[0.07]">
               <AnimatePresence mode="popLayout" initial={false}>
                 <motion.div
                   key={`${way.id}-${stepIndex}`}
