@@ -23,7 +23,8 @@ const geistSans = localFont({ src: "./fonts/geist-latin.woff2", weight: "100 900
 const geistMono = localFont({ src: "./fonts/geist-mono-latin.woff2", weight: "100 900", variable: "--font-geist-mono", display: "swap" });
 
 const TITLE = "Savedly — Save it now, find it later";
-const DESCRIPTION = "Your personal memory for the internet. Save links, notes, videos, and screenshots, and find them again with a search that understands what you meant.";
+// Kept under 125 characters: link previews cut off longer ones, sooner on phones.
+const DESCRIPTION = "Save links, notes, videos and screenshots. Find them again by describing what you remember. Free and open source.";
 
 // Social previews need absolute image URLs: see lib/site-url.ts.
 
