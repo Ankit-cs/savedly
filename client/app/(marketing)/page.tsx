@@ -2,7 +2,7 @@ import { WhatsNewPopup } from "@/components/whats-new/whats-new-popup";
 import { HeroSwitcher } from "@/components/marketing/landing/hero-switcher";
 import { StepsSection } from "@/components/marketing/landing/steps-section";
 import { FeatureBlocks } from "@/components/marketing/landing/feature-blocks";
-import { ContributeSection } from "@/components/marketing/landing/contribute-section";
+import { OpenSection } from "@/components/marketing/landing/open-section";
 import { FaqSection } from "@/components/marketing/landing/faq-section";
 import { FinalCtaSection } from "@/components/marketing/landing/final-cta-section";
 import MainFooter from "@/components/marketing/landing/main-footer";
@@ -40,7 +40,7 @@ export default function MarketingPage() {
       <HeroSwitcher />
       <StepsSection />
       <FeatureBlocks />
-      <ContributeSection />
+      <OpenSection />
       <FaqSection />
       <FinalCtaSection />
       <MainFooter />
