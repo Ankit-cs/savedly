@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
+import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import {
   ArrowRight01Icon as ArrowRightIcon,
@@ -19,8 +19,9 @@ import { cn } from "@/lib/utils";
 import { AskScene, OrganizeScene, SaveScene, SearchScene } from "@/components/marketing/landing/product-scenes";
 
 // The hero: a plain statement, then the product shown as four small scenes
-// on a coloured panel. On a wide screen the panel holds still while you
-// scroll and the scenes change under it; on a phone they advance by
+// on a coloured panel. On a wide screen the panel grows to fill the screen
+// as you reach it, holds while you scroll through the scenes, then shrinks
+// back and lets the page move on; on a phone the scenes advance by
 // themselves and by tap.
 
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -122,6 +123,11 @@ function Backdrop({ tones }: { tones: [string, string, string] }) {
   );
 }
 
+// Where, along the pinned stretch, the panel has finished growing to fill
+// the screen and where it starts to shrink again. The scenes change between.
+const HOLD_FROM = 0.16;
+const HOLD_TO = 0.84;
+
 function Switcher() {
   const pinned = usePinned();
   const reduce = useReducedMotion();
@@ -130,10 +136,21 @@ function Switcher() {
   const [touched, setTouched] = useState(false);
   const { scrollYProgress } = useScroll({ target: track, offset: ["start start", "end end"] });
 
+  // 0 = a rounded panel set in from the edges, 1 = filling the whole screen.
+  // It grows as the page reaches it, holds while the scenes change, then
+  // shrinks back before the page moves on. The spring takes the steps out of
+  // a mouse wheel.
+  const grow = useSpring(useTransform(scrollYProgress, [0, HOLD_FROM, HOLD_TO, 1], [0, 1, 1, 0]), { stiffness: 140, damping: 30, mass: 0.5 });
+  const side = useTransform(grow, (g) => `calc(${(1 - g).toFixed(4)} * max(4vw, (100vw - 1240px) / 2))`);
+  const top = useTransform(grow, (g) => `${((1 - g) * 92).toFixed(2)}px`);
+  const bottom = useTransform(grow, (g) => `${((1 - g) * 44).toFixed(2)}px`);
+  const radius = useTransform(grow, (g) => `${((1 - g) * 40).toFixed(2)}px`);
+
   // Wide screens: the scroll position picks the scene.
   useMotionValueEvent(scrollYProgress, "change", (progress) => {
     if (!pinned) return;
-    setActive(Math.min(TABS.length - 1, Math.max(0, Math.floor(progress * TABS.length))));
+    const within = (progress - HOLD_FROM) / (HOLD_TO - HOLD_FROM);
+    setActive(Math.min(TABS.length - 1, Math.max(0, Math.floor(within * TABS.length))));
   });
 
   // Elsewhere: the scenes take turns until someone picks one.
@@ -148,9 +165,10 @@ function Switcher() {
     const el = track.current;
     if (pinned && el) {
       // Move the page to where this scene lives, so scrolling carries on from it.
-      const top = el.getBoundingClientRect().top + window.scrollY;
+      const start = el.getBoundingClientRect().top + window.scrollY;
       const span = el.offsetHeight - window.innerHeight;
-      window.scrollTo({ top: top + ((index + 0.5) / TABS.length) * span, behavior: "smooth" });
+      const at = HOLD_FROM + ((index + 0.5) / TABS.length) * (HOLD_TO - HOLD_FROM);
+      window.scrollTo({ top: start + at * span, behavior: "smooth" });
     } else {
       setActive(index);
     }
@@ -160,12 +178,13 @@ function Switcher() {
   const Scene = tab.Scene;
 
   return (
-    <div ref={track} className={cn("relative mt-14 md:mt-20", pinned && "h-[330vh]")}>
-      <div className={cn("mx-auto w-full max-w-[1400px] px-3 sm:px-5", pinned && "sticky top-[4.75rem]")}>
-        <div
+    <div ref={track} className={cn("relative mt-14 md:mt-20", pinned && "h-[480vh]")}>
+      <div className={cn(pinned ? "sticky top-0 h-screen" : "mx-auto w-full max-w-[1240px] px-3 sm:px-5")}>
+        <motion.div
+          style={pinned ? { top, bottom, left: side, right: side, borderRadius: radius } : undefined}
           className={cn(
-            "relative flex flex-col items-center justify-center overflow-hidden rounded-[1.75rem] px-3 py-8 sm:rounded-[2.25rem] sm:px-8 sm:py-12",
-            pinned && "h-[calc(100vh-5.75rem)]",
+            "flex flex-col items-center justify-center overflow-hidden px-3 py-8 sm:px-8 sm:py-12",
+            pinned ? "absolute" : "relative rounded-[1.75rem] sm:rounded-[2.25rem]",
           )}
         >
           <Backdrop tones={tab.tones} />
@@ -244,7 +263,7 @@ function Switcher() {
               </AnimatePresence>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
