@@ -1,7 +1,6 @@
 import { WhatsNewPopup } from "@/components/whats-new/whats-new-popup";
 import { HeroSwitcher } from "@/components/marketing/landing/hero-switcher";
-import { ManifestoSection } from "@/components/marketing/landing/manifesto-section";
-import { PipelineSection } from "@/components/marketing/landing/pipeline-section";
+import { StepsSection } from "@/components/marketing/landing/steps-section";
 import { FeatureRowsSection } from "@/components/marketing/landing/feature-rows-section";
 import { ContributeSection } from "@/components/marketing/landing/contribute-section";
 import { FaqSection } from "@/components/marketing/landing/faq-section";
@@ -39,8 +38,7 @@ export default function MarketingPage() {
       />
       <WhatsNewPopup />
       <HeroSwitcher />
-      <ManifestoSection />
-      <PipelineSection />
+      <StepsSection />
       <FeatureRowsSection />
       <ContributeSection />
       <FaqSection />
