@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 import { AskScene, OrganizeScene, SaveScene, SearchScene } from "@/components/marketing/landing/product-scenes";
 
 // The hero: a plain statement, then the product shown as four small scenes
-// on a coloured panel. On a wide screen the panel grows to fill the screen
+// on a coloured panel. On a wide screen the panel grows to almost fill the screen
 // as you reach it, holds while you scroll through the scenes, then shrinks
 // back and lets the page move on; on a phone the scenes advance by
 // themselves and by tap.
@@ -136,15 +136,16 @@ function Switcher() {
   const [touched, setTouched] = useState(false);
   const { scrollYProgress } = useScroll({ target: track, offset: ["start start", "end end"] });
 
-  // 0 = a rounded panel set in from the edges, 1 = filling the whole screen.
+  // 0 = a rounded panel set well in from the edges, 1 = nearly the whole
+  // screen, still with a thin margin and rounded corners.
   // It grows as the page reaches it, holds while the scenes change, then
   // shrinks back before the page moves on. The spring takes the steps out of
   // a mouse wheel.
   const grow = useSpring(useTransform(scrollYProgress, [0, HOLD_FROM, HOLD_TO, 1], [0, 1, 1, 0]), { stiffness: 140, damping: 30, mass: 0.5 });
-  const side = useTransform(grow, (g) => `calc(${(1 - g).toFixed(4)} * max(4vw, (100vw - 1240px) / 2))`);
-  const top = useTransform(grow, (g) => `${((1 - g) * 92).toFixed(2)}px`);
-  const bottom = useTransform(grow, (g) => `${((1 - g) * 44).toFixed(2)}px`);
-  const radius = useTransform(grow, (g) => `${((1 - g) * 40).toFixed(2)}px`);
+  const side = useTransform(grow, (g) => `calc(${g.toFixed(4)} * 1.25rem + ${(1 - g).toFixed(4)} * max(4vw, (100vw - 1240px) / 2))`);
+  const top = useTransform(grow, (g) => `${(16 + (1 - g) * 76).toFixed(2)}px`);
+  const bottom = useTransform(grow, (g) => `${(16 + (1 - g) * 28).toFixed(2)}px`);
+  const radius = useTransform(grow, (g) => `${(36 + (1 - g) * 4).toFixed(2)}px`);
 
   // Wide screens: the scroll position picks the scene.
   useMotionValueEvent(scrollYProgress, "change", (progress) => {
