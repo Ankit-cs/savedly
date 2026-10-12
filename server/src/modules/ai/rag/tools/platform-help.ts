@@ -30,16 +30,24 @@ interface HelpTool {
   href: string;
 }
 
-const CACHE_MS = 10 * 60 * 1000;
-let cache: { guides: HelpGuide[]; tools: HelpTool[]; at: number } | null = null;
+/** One public page of the website (client/lib/site-pages.ts). */
+export interface SitePage {
+  id: string;
+  title: string;
+  href: string;
+  summary: string;
+}
 
-async function loadHelp(): Promise<{ guides: HelpGuide[]; tools: HelpTool[] }> {
+const CACHE_MS = 10 * 60 * 1000;
+let cache: { guides: HelpGuide[]; tools: HelpTool[]; pages: SitePage[]; at: number } | null = null;
+
+async function loadHelp(): Promise<{ guides: HelpGuide[]; tools: HelpTool[]; pages: SitePage[] }> {
   if (cache && Date.now() - cache.at < CACHE_MS) return cache;
   try {
     const res = await fetch(new URL("/api/help", env.FRONTEND_URL), { signal: AbortSignal.timeout(8000) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const body = (await res.json()) as { guides?: HelpGuide[]; tools?: HelpTool[] };
-    cache = { guides: body.guides ?? [], tools: body.tools ?? [], at: Date.now() };
+    const body = (await res.json()) as { guides?: HelpGuide[]; tools?: HelpTool[]; pages?: SitePage[] };
+    cache = { guides: body.guides ?? [], tools: body.tools ?? [], pages: body.pages ?? [], at: Date.now() };
     return cache;
   } catch (err) {
     logger.warn({ err: (err as Error).message }, "[platform-help] couldn't load the Help Center");
@@ -86,6 +94,11 @@ function score(guide: HelpGuide, query: Set<string>): number {
     if (steps.has(w)) total += 1;
   }
   return total;
+}
+
+/** Every public page of the website, with what each is for. Empty if the site can't be reached. */
+export async function loadSitePages(): Promise<SitePage[]> {
+  return (await loadHelp().catch(() => null))?.pages ?? [];
 }
 
 /**
