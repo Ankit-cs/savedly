@@ -138,14 +138,18 @@ export default function BlogEditorPage({ params }: { params: Promise<{ id: strin
     if (saving) return;
     const issue = problem(draft, isNew);
     if (issue) {
-      toast.add({ title: issue, type: "error" });
+      // Something to put right, not something that went wrong.
+      toast.warning(issue);
       return;
     }
     if (action === "publish" && !draft.content.trim()) {
-      toast.add({ title: "Write the post before publishing it.", type: "error" });
+      toast.warning("Write the post before publishing it.");
       return;
     }
     setSaving(action);
+    // Publishing and unpublishing show their progress as one toast that turns
+    // into the result. A plain save says so in the bar at the top instead.
+    const progress = action === "publish" ? toast.loading("Publishing") : action === "unpublish" ? toast.loading("Moving back to drafts") : null;
     try {
       const input: BlogPostInput = {
         title: draft.title.trim(),
@@ -167,15 +171,27 @@ export default function BlogEditorPage({ params }: { params: Promise<{ id: strin
       setSavedAt(new Date());
       queryClient.setQueryData(["admin", "blog", result.id], result);
       await queryClient.invalidateQueries({ queryKey: ["admin", "blog"], exact: true });
-      if (action !== "save") {
-        toast.add({ title: action === "publish" ? "Published. It's on the website within a minute." : "Moved back to drafts.", type: "success" });
+      if (progress) {
+        toast.update(
+          progress,
+          action === "publish"
+            ? {
+                type: "success",
+                title: "Published",
+                description: "It's on the website within a minute.",
+                action: { label: "View", onClick: () => window.open(`/blog/${result.slug}`, "_blank", "noopener") },
+              }
+            : { type: "info", title: "Moved back to drafts", description: "It's no longer on the website." },
+        );
       }
       if (isNew) {
         loadedFor.current = result.id;
         router.replace(`/admin/blog/${result.id}`);
       }
     } catch (err) {
-      toast.add({ title: err instanceof ApiError ? err.message : "Couldn't save the post.", type: "error" });
+      const failed = { type: "error" as const, title: "Couldn't save the post", description: err instanceof ApiError ? err.message : undefined };
+      if (progress) toast.update(progress, failed);
+      else toast.add(failed);
     } finally {
       setSaving(null);
     }
