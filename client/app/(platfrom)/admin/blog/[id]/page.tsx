@@ -65,7 +65,7 @@ function problem(draft: Draft, isNew: boolean): string | null {
   if (isNew && draft.slug && !SLUG_PATTERN.test(draft.slug)) return "The address can only have lowercase letters, numbers and hyphens.";
   if (draft.excerpt.length > MAX_EXCERPT) return `The summary is over ${MAX_EXCERPT} characters.`;
   if (parseTags(draft.tags).length > MAX_TAGS) return `Use at most ${MAX_TAGS} tags.`;
-  if (draft.coverImageUrl.trim() && !/^https?:\/\//i.test(draft.coverImageUrl.trim())) return "The cover image address must start with https://";
+  if (draft.coverImageUrl.trim() && !/^(https?:\/\/|\/(?!\/))/i.test(draft.coverImageUrl.trim())) return "The cover image must be an https:// address, or a path on this site starting with /";
   return null;
 }
 
@@ -356,7 +356,7 @@ export default function BlogEditorPage({ params }: { params: Promise<{ id: strin
                 <img src={draft.coverImageUrl} alt="" className="aspect-[16/9] w-full object-cover" />
               </div>
             ) : null}
-            <Input aria-label="Cover image address" value={draft.coverImageUrl} onChange={(e) => set("coverImageUrl", e.target.value)} placeholder="https://… or upload one" className="mt-1.5 text-sm" />
+            <Input aria-label="Cover image address" value={draft.coverImageUrl} onChange={(e) => set("coverImageUrl", e.target.value)} placeholder="https://…, /a-site-path, or upload one" className="mt-1.5 text-sm" />
             <div className="mt-1.5 flex items-center gap-3">
               <label className={cn("inline-flex cursor-pointer items-center gap-1.5 text-xs font-medium text-foreground hover:text-primary", uploading && "pointer-events-none opacity-60")}>
                 <HugeiconsIcon icon={ImageUpload} strokeWidth={2} className="h-4 w-4" />
