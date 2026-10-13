@@ -88,7 +88,7 @@ function problemWith(draft: Draft): string | null {
   if (label && !url) return "The button needs a link.";
   if (url && !label) return "The button needs a label.";
   if (url && !url.startsWith("/") && !/^https?:\/\//i.test(url)) return "The button link must start with / or https://";
-  if (draft.imageUrl.trim() && !/^https?:\/\//i.test(draft.imageUrl.trim())) return "The image address must start with https://";
+  if (draft.imageUrl.trim() && !/^(https?:\/\/|\/(?!\/))/i.test(draft.imageUrl.trim())) return "The image must be an https:// address, or a path on this site starting with /";
   return null;
 }
 
@@ -341,6 +341,7 @@ export default function AdminWhatsNewPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="feature">Feature</SelectItem>
                     <SelectItem value="new">New</SelectItem>
                     <SelectItem value="improved">Improved</SelectItem>
                     <SelectItem value="upcoming">Coming soon</SelectItem>

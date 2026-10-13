@@ -69,6 +69,8 @@ export enum BlogPostStatus {
 
 // What a "What's new" card is telling the visitor about (see whatsNewItems).
 export enum WhatsNewKind {
+  // Something the product does, with no claim that it just arrived: the launch tour.
+  FEATURE = "feature",
   NEW = "new",
   IMPROVED = "improved",
   UPCOMING = "upcoming",
