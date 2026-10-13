@@ -4,6 +4,7 @@ import { StepsSection } from "@/components/marketing/landing/steps-section";
 import { FeatureBlocks } from "@/components/marketing/landing/feature-blocks";
 import { OpenSection } from "@/components/marketing/landing/open-section";
 import { MoreSection } from "@/components/marketing/landing/more-section";
+import { ConnectSection } from "@/components/marketing/landing/connect-section";
 import { ImportSection } from "@/components/marketing/landing/import-section";
 import { PrivacySection } from "@/components/marketing/landing/privacy-section";
 import { PricingStrip } from "@/components/marketing/landing/pricing-strip";
@@ -45,6 +46,7 @@ export default function MarketingPage() {
       <StepsSection />
       <FeatureBlocks />
       <MoreSection />
+      <ConnectSection />
       <ImportSection />
       <PrivacySection />
       <OpenSection />

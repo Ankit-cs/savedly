@@ -8,15 +8,12 @@ import {
   Analytics01Icon,
   Calendar03Icon,
   CommandIcon,
-  GithubIcon,
   Globe02Icon,
   LockIcon,
   LockPasswordIcon,
-  Plug01Icon,
   Search01Icon,
   Share08Icon,
   SquareLock02Icon,
-  Tick02Icon,
   UserAdd01Icon,
 } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
@@ -161,38 +158,6 @@ function VaultPicture() {
   );
 }
 
-function ConnectPicture() {
-  const rows: { name: string; note: string; state: "on" | "planned"; mark: ReactNode }[] = [
-    { name: "Google Calendar", note: "Events, both directions", state: "on", mark: <HugeiconsIcon icon={Calendar03Icon} strokeWidth={2} className="h-3.5 w-3.5 text-primary" /> },
-    { name: "GitHub stars", note: "Starred repositories", state: "on", mark: <HugeiconsIcon icon={GithubIcon} strokeWidth={2} className="h-3.5 w-3.5 text-foreground" /> },
-    { name: "Notion", note: "Pages you choose", state: "planned", mark: <span className="text-[10px] font-bold text-muted-foreground">N</span> },
-    { name: "Raindrop.io", note: "Bookmarks", state: "planned", mark: <span className="text-[10px] font-bold text-muted-foreground">R</span> },
-  ];
-  return (
-    <Surface>
-      <div className="space-y-1.5">
-        {rows.map((r) => (
-          <div key={r.name} className={cn("flex items-center gap-2.5 rounded-lg bg-muted/60 px-2.5 py-2", r.state === "planned" && "opacity-60")}>
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-card ring-1 ring-foreground/[0.07]">{r.mark}</span>
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-medium leading-tight text-foreground">{r.name}</p>
-              <p className="text-[9.5px] leading-tight text-muted-foreground">{r.note}</p>
-            </div>
-            {r.state === "on" ? (
-              <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-600 dark:text-emerald-400">
-                <HugeiconsIcon icon={Tick02Icon} strokeWidth={2.5} className="h-2.5 w-2.5" />
-                Connected
-              </span>
-            ) : (
-              <span className="rounded-full bg-foreground/[0.06] px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground">Planned</span>
-            )}
-          </div>
-        ))}
-      </div>
-    </Surface>
-  );
-}
-
 function PalettePicture() {
   const items = [
     ["Save a memory", "Quick action"],
@@ -249,13 +214,6 @@ const CARDS: { icon: IconSvgElement; title: string; body: string; picture: React
     href: "/help/docs/share/vault",
   },
   {
-    icon: Plug01Icon,
-    title: "Connects to what you already use",
-    body: "Google Calendar shows your events here and adds yours there. Connect GitHub and the repositories you star join your library. Notion, Raindrop, Reddit, YouTube and a browser extension are planned next.",
-    picture: <ConnectPicture />,
-    href: "/help/docs/stay/calendar",
-  },
-  {
     icon: CommandIcon,
     title: "Quick to get around",
     body: "A command palette and keyboard shortcuts for everything. Install it on your phone with no app store, and share to Savedly from other apps. Light and dark themes, with an accent color of your choosing.",
@@ -282,7 +240,7 @@ function Heading() {
         </h2>
       </div>
       <p className="max-w-xl text-lg leading-relaxed text-pretty text-muted-foreground lg:justify-self-end">
-        Search, Ask and filing are the heart of it. Around them is the rest of a place to keep things: sharing, a calendar, a vault, and the tools you already use.
+        Search, Ask and filing are the heart of it. Around them is the rest of a place to keep things: sharing, a calendar, a vault, and quick ways to get around.
       </p>
     </div>
   );
