@@ -29,18 +29,12 @@ import { PlanLimitNotice, LimitDot } from "@/components/plan-limit-notice";
 import { detectMemoryType, deriveTitle, splitLinkAndCaption } from "@/lib/detect-memory-type";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { GlidingHighlight } from "@/components/ui/gliding-highlight";
 import { AccentColor } from "@/components/accent-color";
-import { CommandPalette, type CommandItem as PaletteItem } from "@/components/arc/command-palette/command-palette";
+import { PaletteDialog, type PaletteItem } from "@/components/ui/palette-dialog";
 import { Textarea as ArcTextarea } from "@/components/arc/textarea/textarea";
 import { Input as ArcInput } from "@/components/arc/input/input";
 import { Button as ArcButton } from "@/components/arc/button/button";
@@ -487,7 +481,6 @@ function AppShell({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const paletteRef = useRef<HTMLDivElement>(null);
   // The single source of truth for "what kind of memory is this" — rule-based
   // for now, but isolated in lib/detect-memory-type.ts so it's a one-place
   // swap for a real AI classifier later.
@@ -1510,43 +1503,16 @@ function AppShell({ children }: { children: React.ReactNode }) {
       </AnimatePresence>
 
       {/* GLOBAL SEARCH COMMAND PALETTE (⌘K) */}
-      {/* The command palette (Ctrl/⌘+K): Arc's, inside the app's dialog. It draws
-          its own panel, so the dialog around it has no surface of its own, and
-          sits near the top of the window so it doesn't jump as results filter.
-          Arc's built-in "⌘ K" hint is hidden: it is wrong off a Mac, and the
-          palette is already open. */}
-      <Dialog
+      {/* The command palette (Ctrl/⌘+K). */}
+      <PaletteDialog
         open={searchModalOpen}
-        onOpenChange={(open, details) => {
-          // Escape with something typed clears the search (the palette does
-          // that itself); only Escape on an empty box closes.
-          const typed = paletteRef.current?.querySelector<HTMLInputElement>('[role="combobox"]')?.value;
-          if (!open && details?.reason === "escape-key" && typed) return;
-          setSearchModalOpen(open);
-        }}
-      >
-        <DialogContent
-          ref={paletteRef}
-          showCloseButton={false}
-          // The palette draws its own panel and belongs at the top, by the keyboard's reach.
-          mobileSheet={false}
-          className="top-[12vh] translate-y-0 gap-0 bg-transparent p-0 shadow-none ring-0 sm:max-w-xl [&_[role=combobox]~kbd]:!hidden"
-        >
-          <DialogTitle className="sr-only">Search and commands</DialogTitle>
-          <DialogDescription className="sr-only">Type to find a page or an action, then press Enter.</DialogDescription>
-          <CommandPalette
-            autoFocus
-            items={commandItems}
-            placeholder="Search or jump to…"
-            label="Search pages and actions"
-            onSelect={(item) => {
-              setSearchModalOpen(false);
-              commandActions[item.id]?.();
-            }}
-            onClose={() => setSearchModalOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
+        onOpenChange={setSearchModalOpen}
+        title="Search pages and actions"
+        description="Type to find a page or an action, then press Enter."
+        placeholder="Search or jump to…"
+        items={commandItems}
+        onSelect={(item) => commandActions[item.id]?.()}
+      />
 
       {/* KEYBOARD SHORTCUTS DIALOG */}
       <ResponsiveDialog

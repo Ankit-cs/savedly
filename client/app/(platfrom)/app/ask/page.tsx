@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { PaletteDialog } from "@/components/ui/palette-dialog";
 import {
   MessageScroller,
   MessageScrollerButton,
@@ -728,27 +728,26 @@ export default function AskPage() {
           once the main sidebar is fully collapsed) — same thread list as
           the on-page sidebar, just reachable when that sidebar has nowhere
           to render. */}
-      <CommandDialog open={historyModalOpen} onOpenChange={setHistoryModalOpen} title="Chat history" description="Jump to a previous conversation">
-        <CommandInput placeholder="Search conversations..." />
-        <CommandList>
-          <CommandEmpty>No conversations yet.</CommandEmpty>
-          <CommandGroup heading="Conversations">
-            {threads.map((thread) => (
-              <CommandItem
-                key={thread.id}
-                value={thread.title}
-                onSelect={() => {
-                  setHistoryModalOpen(false);
-                  handleSelectThread(thread.id);
-                }}
-              >
-                <HugeiconsIcon icon={MessageSquare} strokeWidth={2.25} className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-                <span>{thread.title}</span>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
+      <PaletteDialog
+        open={historyModalOpen}
+        onOpenChange={setHistoryModalOpen}
+        title="Chat history"
+        description="Jump to a previous conversation, or start a new one."
+        placeholder="Search conversations…"
+        items={[
+          { id: "new", group: "Start", label: "New chat", keywords: ["start", "fresh", "ask"], icon: <HugeiconsIcon icon={MessageSquare} strokeWidth={2} className="h-4 w-4" /> },
+          // Grouped the same way as the list beside the chat: Today, Yesterday, and so on.
+          ...groupThreadsByDate(threads).flatMap((group) =>
+            group.threads.map((thread) => ({
+              id: `thread:${thread.id}`,
+              group: group.label,
+              label: thread.title,
+              icon: <HugeiconsIcon icon={MessageSquare} strokeWidth={2} className="h-4 w-4" />,
+            })),
+          ),
+        ]}
+        onSelect={(item) => (item.id === "new" ? handleNewChat() : handleSelectThread(item.id.slice("thread:".length)))}
+      />
     </div>
     </AiConfiguredGate>
   );
