@@ -68,6 +68,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
+import { ShortcutList, type ShortcutListGroup } from "@/components/arc/shortcut-recorder/shortcut-recorder";
 import { Logo, LogoMark } from "@/components/logo";
 import { NextStepProvider, NextStep } from "nextstepjs";
 import { useNextAdapter } from "nextstepjs/adapters/next";
@@ -284,17 +285,40 @@ function CaptureCollectionPicker({
   );
 }
 
-const KEYBOARD_SHORTCUTS: { mac: string[]; other: string[]; label: string }[] = [
-  { mac: ["⌘", "K"], other: ["Ctrl", "K"], label: "Open search" },
-  { mac: ["⌘", "Q"], other: ["Ctrl", "Q"], label: "Quick capture" },
-  { mac: ["⌘", "B"], other: ["Ctrl", "B"], label: "Toggle sidebar" },
-  { mac: ["⌘", "M"], other: ["Ctrl", "M"], label: "Open sidebar menu (collapses sidebar first)" },
-  { mac: ["⌘", "N"], other: ["Ctrl", "N"], label: "Go to notifications" },
-  { mac: ["⌘", "P"], other: ["Ctrl", "P"], label: "Go to settings" },
-  { mac: ["⌘", "J"], other: ["Ctrl", "J"], label: "New chat (on Ask Savedly)" },
-  { mac: ["⌘", "H"], other: ["Ctrl", "H"], label: "Open chat history (on Ask Savedly)" },
-  { mac: ["⌘", "/"], other: ["Ctrl", "/"], label: "Show keyboard shortcuts" },
-  { mac: ["Esc"], other: ["Esc"], label: "Close open menu" },
+// What the shortcuts dialog lists. "mod" is ⌘ on a Mac and Ctrl elsewhere;
+// the dialog draws the right one for whoever is looking. The keys themselves
+// are handled further down, in the layout's keydown listeners.
+const KEYBOARD_SHORTCUTS: ShortcutListGroup[] = [
+  {
+    label: "Anywhere",
+    items: [
+      { label: "Open search", shortcut: "mod+k", keywords: "find command palette" },
+      { label: "Quick capture", shortcut: "mod+q", keywords: "save new add memory" },
+      { label: "Show keyboard shortcuts", shortcut: "mod+/", keywords: "help keys" },
+      { label: "Close an open menu", shortcut: "escape", keywords: "esc dismiss cancel" },
+    ],
+  },
+  {
+    label: "Sidebar",
+    items: [
+      { label: "Show or hide the sidebar", shortcut: "mod+b", keywords: "toggle collapse" },
+      { label: "Open the sidebar menu", shortcut: "mod+m", keywords: "navigation collapsed" },
+    ],
+  },
+  {
+    label: "Go to",
+    items: [
+      { label: "Notifications", shortcut: "mod+n", keywords: "alerts inbox" },
+      { label: "Settings", shortcut: "mod+p", keywords: "preferences account" },
+    ],
+  },
+  {
+    label: "On Ask Savedly",
+    items: [
+      { label: "New chat", shortcut: "mod+j", keywords: "conversation ask" },
+      { label: "Chat history", shortcut: "mod+h", keywords: "past conversations threads" },
+    ],
+  },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -1622,35 +1646,16 @@ function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* KEYBOARD SHORTCUTS DIALOG */}
       <Dialog open={shortcutsOpen} onOpenChange={setShortcutsOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Keyboard shortcuts</DialogTitle>
-            <DialogDescription>Available anywhere in the app.</DialogDescription>
+            <DialogDescription>Search for one, or hold a key to see what it does.</DialogDescription>
           </DialogHeader>
-          <ul className="space-y-2 pt-1">
-            {KEYBOARD_SHORTCUTS.map((s) => (
-              <li key={s.label} className="flex items-center justify-between gap-4 text-xs">
-                <span className="text-muted-foreground">{s.label}</span>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <KbdGroup>
-                    {s.mac.map((k, i) => (
-                      <Kbd key={i}>{k}</Kbd>
-                    ))}
-                  </KbdGroup>
-                  {s.mac.join("") !== s.other.join("") && (
-                    <>
-                      <span className="text-muted-foreground/50">/</span>
-                      <KbdGroup>
-                        {s.other.map((k, i) => (
-                          <Kbd key={i}>{k}</Kbd>
-                        ))}
-                      </KbdGroup>
-                    </>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
+          {/* Arc's cheatsheet: searchable, grouped, keys drawn for this person's
+              platform. The list scrolls inside the dialog on a short screen. */}
+          <div className="-mx-1 max-h-[min(60vh,28rem)] overflow-y-auto px-1 pt-1">
+            <ShortcutList groups={KEYBOARD_SHORTCUTS} />
+          </div>
         </DialogContent>
       </Dialog>
 
