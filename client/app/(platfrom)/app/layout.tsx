@@ -31,13 +31,11 @@ import { detectMemoryType, deriveTitle, splitLinkAndCaption } from "@/lib/detect
 import { MEMORY_TYPE_ICONS } from "@/lib/memory-icons";
 import {
   Command,
-  CommandDialog,
   CommandInput,
   CommandList,
   CommandEmpty,
   CommandGroup,
   CommandItem,
-  CommandSeparator,
 } from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -69,7 +67,8 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { ResizablePanel, ResizablePanels } from "@/components/arc/resizable-panels/resizable-panels";
-import { ShortcutList, type ShortcutListGroup } from "@/components/arc/shortcut-recorder/shortcut-recorder";
+import { CommandPalette, type CommandItem as PaletteItem } from "@/components/arc/command-palette/command-palette";
+import { ShortcutList, formatShortcut, usePlatform, type ShortcutListGroup } from "@/components/arc/shortcut-recorder/shortcut-recorder";
 import { Logo, LogoMark } from "@/components/logo";
 import { NextStepProvider, NextStep } from "nextstepjs";
 import { useNextAdapter } from "nextstepjs/adapters/next";
@@ -525,6 +524,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
   // keyboard closes or reopens the sidebar pane, so that is what the app
   // does too, when the phase above reaches the step where the sidebar moves.
   const panelsRef = useRef<HTMLDivElement>(null);
+  const paletteRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (sidebarPhase !== "hiding" && sidebarPhase !== "showing") return;
     const divider = panelsRef.current?.querySelector<HTMLElement>('[role="separator"]');
@@ -713,8 +713,6 @@ function AppShell({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Command palette search query
-  const [commandQuery, setCommandQuery] = useState("");
 
   // Global keyboard shortcuts. Note: Ctrl/Cmd+N and Ctrl/Cmd+P are reserved
   // by the browser itself (new window / print) in Chrome and Firefox — their
@@ -883,6 +881,32 @@ function AppShell({ children }: { children: React.ReactNode }) {
     },
   ];
   const secondaryNavItems = navSections.flatMap((section) => section.items);
+
+  // What the command palette offers: a few actions, then every page the
+  // sidebar links to. `commandActions` holds what each one does, by id.
+  const platform = usePlatform();
+  const keys = (shortcut: string) => formatShortcut(shortcut, platform).text;
+  const paletteIcon = (icon: IconSvgElement) => <HugeiconsIcon icon={icon} strokeWidth={2} className="h-4 w-4" />;
+  const pageItems = [...primaryNavItems, ...secondaryNavItems, { label: "Settings", href: "/app/settings", icon: Settings }];
+  const commandItems: PaletteItem[] = [
+    { id: "capture", group: "Actions", label: "Save something", description: "A link, a note or a file", keywords: ["new", "add", "memory", "capture", "quick"], icon: paletteIcon(Plus), shortcut: keys("mod+q") },
+    { id: "ask", group: "Actions", label: "Ask Savedly", description: "Get an answer from what you saved", keywords: ["chat", "question", "ai"], icon: <LogoMark ticks={false} className="h-4 w-4" /> },
+    { id: "new-collection", group: "Actions", label: "New collection", keywords: ["create", "folder", "group"], icon: paletteIcon(FolderPlus) },
+    { id: "toggle-sidebar", group: "Actions", label: "Show or hide the sidebar", keywords: ["collapse", "expand", "menu"], icon: paletteIcon(PanelLeftClose), shortcut: keys("mod+b") },
+    { id: "shortcuts", group: "Actions", label: "Keyboard shortcuts", keywords: ["keys", "help", "hotkeys"], icon: paletteIcon(Keyboard), shortcut: keys("mod+/") },
+    ...pageItems
+      // "Ask Savedly" is already an action above.
+      .filter((item) => item.href !== "/app/ask")
+      .map((item) => ({ id: `go:${item.href}`, group: "Go to", label: item.label, keywords: ["open", "page"], icon: paletteIcon(item.icon) })),
+  ];
+  const commandActions: Record<string, () => void> = {
+    capture: openCaptureModal,
+    ask: () => router.push("/app/ask"),
+    "new-collection": () => router.push("/app/collections"),
+    "toggle-sidebar": toggleSidebar,
+    shortcuts: () => setShortcutsOpen(true),
+    ...Object.fromEntries(pageItems.map((item) => [`go:${item.href}`, () => router.push(item.href)])),
+  };
   const renderSection = (section: (typeof navSections)[number]) => (
     <SidebarSection
       key={section.id}
@@ -1629,52 +1653,41 @@ function AppShell({ children }: { children: React.ReactNode }) {
       </AnimatePresence>
 
       {/* GLOBAL SEARCH COMMAND PALETTE (⌘K) */}
-      <CommandDialog open={searchModalOpen} onOpenChange={setSearchModalOpen}>
-        <CommandInput
-          placeholder="Search or jump to..."
-          value={commandQuery}
-          onValueChange={setCommandQuery}
-        />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-
-          <CommandGroup heading="Quick Actions">
-            <CommandItem onSelect={() => { setSearchModalOpen(false); openCaptureModal(); }}>
-              <HugeiconsIcon icon={Plus} strokeWidth={2.25} className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-              <span>Save a memory</span>
-            </CommandItem>
-            <CommandItem onSelect={() => { setSearchModalOpen(false); router.push("/app/ask"); }}>
-              <LogoMark ticks={false} className="mr-2 h-3.5 w-3.5" />
-              <span>Ask Savedly</span>
-            </CommandItem>
-            <CommandItem onSelect={() => { setSearchModalOpen(false); router.push("/app/collections"); }}>
-              <HugeiconsIcon icon={FolderPlus} strokeWidth={2.25} className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-              <span>Create collection</span>
-            </CommandItem>
-          </CommandGroup>
-
-          <CommandSeparator />
-
-          <CommandGroup heading="Go to">
-            <CommandItem onSelect={() => { setSearchModalOpen(false); router.push("/app"); }}>
-              <HugeiconsIcon icon={Compass} strokeWidth={2.25} className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-              <span>Go to Home</span>
-            </CommandItem>
-            <CommandItem onSelect={() => { setSearchModalOpen(false); router.push("/app/memories"); }}>
-              <HugeiconsIcon icon={FolderOpen} strokeWidth={2.25} className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-              <span>Go to Memories</span>
-            </CommandItem>
-            <CommandItem onSelect={() => { setSearchModalOpen(false); router.push("/app/favorites"); }}>
-              <HugeiconsIcon icon={Heart} strokeWidth={2.25} className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-              <span>Go to Favorites</span>
-            </CommandItem>
-            <CommandItem onSelect={() => { setSearchModalOpen(false); router.push("/app/settings"); }}>
-              <HugeiconsIcon icon={Settings} strokeWidth={2.25} className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-              <span>Go to Settings</span>
-            </CommandItem>
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
+      {/* The command palette (Ctrl/⌘+K): Arc's, inside the app's dialog. It draws
+          its own panel, so the dialog around it has no surface of its own, and
+          sits near the top of the window so it doesn't jump as results filter.
+          Arc's built-in "⌘ K" hint is hidden: it is wrong off a Mac, and the
+          palette is already open. */}
+      <Dialog
+        open={searchModalOpen}
+        onOpenChange={(open, details) => {
+          // Escape with something typed clears the search (the palette does
+          // that itself); only Escape on an empty box closes.
+          const typed = paletteRef.current?.querySelector<HTMLInputElement>('[role="combobox"]')?.value;
+          if (!open && details?.reason === "escape-key" && typed) return;
+          setSearchModalOpen(open);
+        }}
+      >
+        <DialogContent
+          ref={paletteRef}
+          showCloseButton={false}
+          className="top-[12vh] translate-y-0 gap-0 bg-transparent p-0 shadow-none ring-0 sm:max-w-xl [&_[role=combobox]~kbd]:!hidden"
+        >
+          <DialogTitle className="sr-only">Search and commands</DialogTitle>
+          <DialogDescription className="sr-only">Type to find a page or an action, then press Enter.</DialogDescription>
+          <CommandPalette
+            autoFocus
+            items={commandItems}
+            placeholder="Search or jump to…"
+            label="Search pages and actions"
+            onSelect={(item) => {
+              setSearchModalOpen(false);
+              commandActions[item.id]?.();
+            }}
+            onClose={() => setSearchModalOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* KEYBOARD SHORTCUTS DIALOG */}
       <Dialog open={shortcutsOpen} onOpenChange={setShortcutsOpen}>
