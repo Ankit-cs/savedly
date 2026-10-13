@@ -7,7 +7,7 @@ import { useTheme } from "next-themes";
 import { useQuery } from "@tanstack/react-query";
 import { MaintenanceFullPage } from "@/components/maintenance/maintenance-full-page";
 import { getMaintenanceStatus } from "@/lib/maintenance";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import { SparklesIcon as Sparkles, PlusIcon as Plus, Search01Icon as Search, Settings01Icon as Settings, HelpCircleIcon as HelpCircle, BellIcon as Bell, MoonIcon as Moon, Sun01Icon as Sun, FolderOpenIcon as FolderOpen, CompassIcon as Compass, CheckIcon as Check, ChevronDownIcon as ChevronDown, FolderPlusIcon as FolderPlus, HeartIcon as Heart, Clock01Icon as Clock, CompassIcon, BarChartIcon as BarChart2, CloudUploadIcon as UploadCloud, Layers01Icon as Layers, PanelLeftCloseIcon as PanelLeftClose, PanelLeftOpenIcon as PanelLeftOpen, Menu01Icon as Menu, Tag01Icon as Tag, KeyboardIcon as Keyboard, Archive01Icon as Archive, Delete02Icon as Trash2, TrendingUpIcon as TrendingUp, Plug01Icon as Plug, MessageSquarePlusIcon as MessageSquarePlus, HistoryIcon as History, ShieldUserIcon as ShieldUser, Share02Icon as Share2, LockPasswordIcon as VaultIcon, Calendar03Icon as CalendarIcon } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
@@ -38,6 +38,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
+import { GlidingHighlight } from "@/components/ui/gliding-highlight";
 import { CommandPalette, type CommandItem as PaletteItem } from "@/components/arc/command-palette/command-palette";
 import { Textarea as ArcTextarea } from "@/components/arc/textarea/textarea";
 import { Input as ArcInput } from "@/components/arc/input/input";
@@ -114,7 +115,7 @@ function SidebarLink({ item, active, ...rest }: { item: NavItem; active: boolean
       {...rest}
       className={cn(
         SIDEBAR_ROW,
-        // No hover fill of its own: the nav's one highlight glides to it (SidebarNav).
+        // No hover fill of its own: the nav's one highlight glides to it (GlidingHighlight).
         active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
       )}
     >
@@ -130,65 +131,6 @@ function SidebarLink({ item, active, ...rest }: { item: NavItem; active: boolean
         </span>
       ) : null}
     </Link>
-  );
-}
-
-type RowBox = { x: number; y: number; width: number; height: number };
-
-/**
- * The sidebar's list of links, with one highlight that glides from row to row
- * under the pointer, the way the command palette's does, instead of each row
- * lighting up by itself. It follows keyboard focus too, fades in when the
- * pointer arrives and out when it leaves, and stays off the current page's
- * row, which has its own fill.
- */
-function SidebarNav({ children }: { children: React.ReactNode }) {
-  const nav = useRef<HTMLElement>(null);
-  const [box, setBox] = useState<RowBox | null>(null);
-  const reduced = useReducedMotion();
-
-  const moveTo = (target: EventTarget | null) => {
-    const el = target instanceof Element ? target : null;
-    const row = el?.closest<HTMLElement>("[data-nav-row]");
-    const root = nav.current;
-    if (!root) return;
-    if (!row || row.getAttribute("aria-current") === "page") {
-      // Between rows it stays where it was; on a section's own controls, or the current page, it goes.
-      if (!row && !el?.closest("a, button")) return;
-      setBox(null);
-      return;
-    }
-    const r = row.getBoundingClientRect();
-    const n = root.getBoundingClientRect();
-    const next = { x: r.left - n.left, y: r.top - n.top, width: r.width, height: r.height };
-    setBox((prev) => (prev && prev.x === next.x && prev.y === next.y && prev.width === next.width && prev.height === next.height ? prev : next));
-  };
-
-  return (
-    <nav
-      ref={nav}
-      aria-label="Main"
-      className="relative px-3 pb-5 space-y-5"
-      onPointerMove={(e) => e.pointerType !== "touch" && moveTo(e.target)}
-      onPointerLeave={() => setBox(null)}
-      onFocus={(e) => e.target.matches(":focus-visible") && moveTo(e.target)}
-      onBlur={(e) => !e.currentTarget.contains(e.relatedTarget) && setBox(null)}
-    >
-      <AnimatePresence>
-        {box && (
-          <motion.span
-            aria-hidden
-            className="pointer-events-none absolute top-0 left-0 z-0 rounded-lg bg-muted/70"
-            // It appears in place, then travels.
-            initial={{ opacity: 0, ...box }}
-            animate={{ opacity: 1, ...box }}
-            exit={{ opacity: 0, transition: { duration: 0.12 } }}
-            transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 520, damping: 38, opacity: { duration: 0.12 } }}
-          />
-        )}
-      </AnimatePresence>
-      {children}
-    </nav>
   );
 }
 
@@ -958,7 +900,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
           </div>
 
         <ScrollArea className="flex-1 min-h-0">
-        <SidebarNav>
+        <GlidingHighlight aria-label="Main" className="px-3 pb-5 space-y-5">
 
           <div className="space-y-0.5">
             {primaryNavItems.map((item) => (
@@ -1036,7 +978,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
 
           {navSections.slice(1).map(renderSection)}
 
-        </SidebarNav>
+        </GlidingHighlight>
         </ScrollArea>
 
         </div>

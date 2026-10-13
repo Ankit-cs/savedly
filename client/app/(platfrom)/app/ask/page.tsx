@@ -43,6 +43,7 @@ import { PlanLimitNotice, ProBadge } from "@/components/plan-limit-notice";
 import { MemoryPreviewCard } from "@/components/memory-preview-card";
 import { AiConfiguredGate } from "@/components/ai-configured-gate";
 import { cn } from "@/lib/utils";
+import { GlidingHighlight } from "@/components/ui/gliding-highlight";
 import { HelpActions } from "@/components/ask/help-actions";
 import { AskEmptyState } from "@/components/ask/ask-empty-state";
 import type { MemoryType } from "@/types/memory";
@@ -500,7 +501,7 @@ export default function AskPage() {
             groupThreadsByDate(threads).map((group) => (
               <div key={group.label} className="pt-4 first:pt-1">
                 <p className="px-3 pb-1.5 text-xs font-medium text-muted-foreground">{group.label}</p>
-                <ul className="space-y-0.5">
+                <GlidingHighlight as="ul" aria-label={group.label} className="space-y-0.5">
                   {group.threads.map((thread) => {
                     const active = thread.id === activeThreadId;
                     return (
@@ -509,10 +510,11 @@ export default function AskPage() {
                           type="button"
                           onClick={() => handleSelectThread(thread.id)}
                           aria-current={active ? "page" : undefined}
+                          data-nav-row=""
                           title={thread.title}
                           className={cn(
-                            "w-full truncate rounded-lg px-3 py-2 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
-                            active ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                            "relative z-[1] w-full truncate rounded-lg px-3 py-2 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
+                            active ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
                           )}
                         >
                           {thread.title}
@@ -520,7 +522,7 @@ export default function AskPage() {
                       </li>
                     );
                   })}
-                </ul>
+                </GlidingHighlight>
               </div>
             ))
           )}
