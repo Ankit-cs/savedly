@@ -83,12 +83,12 @@ function BrandTile({ tile }: { tile: Tile }) {
 
 function Board() {
   return (
-    <div className="relative mx-auto h-[250px] w-full max-w-[860px] select-none sm:h-[380px]" style={{ perspective: "1400px" }}>
-      {/* The plane the tiles lie on: tipped back, fading out at its edges. */}
+    <div className="group relative mx-auto h-[250px] w-full max-w-[860px] select-none sm:h-[380px]" style={{ perspective: "1400px" }}>
+      {/* The plane the tiles lie on: tipped back, fading out at its edges.
+          Under the pointer it stands up to face you. */}
       <div
-        className="absolute inset-x-0 top-0 flex flex-col items-center gap-4 sm:gap-6"
+        className="absolute inset-x-0 top-0 flex flex-col items-center gap-4 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] [transform:rotateX(44deg)] group-hover:[transform:rotateX(0deg)] motion-reduce:transition-none sm:gap-6"
         style={{
-          transform: "rotateX(44deg)",
           transformStyle: "preserve-3d",
           maskImage: "radial-gradient(ellipse 62% 78% at 50% 48%, #000 55%, transparent 100%)",
           WebkitMaskImage: "radial-gradient(ellipse 62% 78% at 50% 48%, #000 55%, transparent 100%)",
@@ -130,7 +130,7 @@ export function ConnectSection() {
       <div className="mx-auto max-w-6xl">
         <Board />
 
-        <div className="mx-auto -mt-2 max-w-2xl text-center">
+        <div className="mx-auto mt-6 max-w-2xl text-center sm:mt-8">
           <h2 className="font-serif text-[clamp(2rem,4.4vw,3.25rem)] font-medium leading-[1.08] tracking-[-0.025em] text-balance text-foreground">
             Works with the tools
             <br className="hidden sm:block" /> you already use
