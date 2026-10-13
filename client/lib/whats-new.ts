@@ -64,3 +64,8 @@ export async function reorderWhatsNew(ids: string[]): Promise<WhatsNewItem[]> {
 export async function deleteWhatsNew(id: string): Promise<{ id: string }> {
   return apiFetch<{ id: string }>(`/admin/whats-new/${id}`, { method: "DELETE" });
 }
+
+/** Replaces every card with the launch feature tour. Returns the new list. */
+export function loadFeatureTour(): Promise<WhatsNewItem[]> {
+  return apiFetch<WhatsNewItem[]>("/admin/whats-new/feature-tour", { method: "POST" });
+}
