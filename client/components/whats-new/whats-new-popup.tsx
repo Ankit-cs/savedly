@@ -112,25 +112,22 @@ export function WhatsNewDeck({ items, open, onOpenChange }: { items: WhatsNewCar
             {items.length === 1 ? "One update." : `${items.length} updates. Use Next and Back to move through them.`}
           </DialogPrimitive.Description>
 
-          {/* The card's own colour: the page's, leaning a little towards the brand
-              blue, so it reads as part of the landing page and not a grey box. */}
-          <div className="relative [--wn-surface:color-mix(in_oklab,var(--primary)_5%,var(--background))] dark:[--wn-surface:color-mix(in_oklab,var(--primary)_10%,#0a0c11)]">
+          {/* The card is dark glass in both themes: see-through black over the blurred
+              page. "dark" switches the colours inside it to their dark-theme values. */}
+          <div className="dark relative text-foreground">
             {/* The cards still to come, peeking out below the one in front. */}
             {Array.from({ length: behind }, (_, i) => (
               <div
                 key={i}
                 aria-hidden
-                className="absolute inset-x-0 bottom-0 h-16 rounded-[28px] bg-[var(--wn-surface)] shadow-lg ring-1 ring-primary/15 transition-all duration-300"
+                className="absolute inset-x-0 bottom-0 h-16 rounded-[28px] bg-black/60 shadow-lg ring-1 ring-white/10 backdrop-blur-xl transition-all duration-300"
                 style={{ transform: `translateY(${(i + 1) * 10}px) scale(${1 - (i + 1) * 0.045})`, opacity: 1 - (i + 1) * 0.3, zIndex: -1 - i }}
               />
             ))}
 
-            <div className="relative flex max-h-[min(92dvh,46rem)] flex-col overflow-hidden rounded-[28px] bg-[var(--wn-surface)] text-foreground shadow-[0_40px_90px_-30px_color-mix(in_oklab,var(--primary)_50%,transparent),0_12px_32px_-12px_rgb(0_0_0/0.4)] ring-1 ring-primary/20">
-              {/* A soft wash of blue from the top edge, behind the picture and the title. */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(95%_60%_at_50%_0%,color-mix(in_oklab,var(--primary)_24%,transparent),transparent_72%)]"
-              />
+            <div className="relative flex max-h-[min(92dvh,46rem)] flex-col overflow-hidden rounded-[28px] bg-black/70 text-foreground shadow-[0_30px_80px_-20px_rgb(0_0_0/0.7)] ring-1 ring-white/10 backdrop-blur-2xl">
+              {/* A faint light from the top, fading out: the only gradient. */}
+              <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.08] via-white/[0.02] to-transparent" />
               <DialogPrimitive.Close
                 aria-label="Close"
                 className="absolute top-4 right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/85 text-foreground shadow-sm ring-1 ring-foreground/10 backdrop-blur transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
@@ -174,11 +171,11 @@ export function WhatsNewDeck({ items, open, onOpenChange }: { items: WhatsNewCar
               <div className="relative h-0 shrink-0">
                 <div
                   aria-hidden
-                  className={cn("pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[var(--wn-surface)] to-transparent transition-opacity duration-200", more ? "opacity-100" : "opacity-0")}
+                  className={cn("pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/85 to-transparent transition-opacity duration-200", more ? "opacity-100" : "opacity-0")}
                 />
               </div>
 
-              <div className="relative flex shrink-0 items-center justify-between gap-4 border-t border-foreground/10 bg-foreground/[0.025] px-5 py-3.5">
+              <div className="relative flex shrink-0 items-center justify-between gap-4 border-t border-white/10 bg-white/[0.03] px-5 py-3.5">
                 {items.length > 1 ? (
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1.5">
