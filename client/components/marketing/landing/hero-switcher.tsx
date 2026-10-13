@@ -196,9 +196,10 @@ function Switcher() {
         <motion.div
           style={pinned ? { top, bottom, left: side, right: side, borderRadius: radius } : undefined}
           className={cn(
-            "flex flex-col items-center justify-center overflow-hidden px-3 sm:px-8 sm:py-12",
-            // Pinned on a phone: room at the top for the navigation bar that floats over the panel.
-            pinned ? "absolute pb-4 pt-[4.25rem] lg:py-12" : "relative rounded-[1.75rem] py-8 sm:rounded-[2.25rem]",
+            "flex flex-col items-center overflow-hidden px-3 sm:px-8 sm:py-12 lg:justify-center",
+            // Pinned on a phone: room at the top for the navigation bar that floats over the panel,
+            // and everything from the top down, so the card can stretch to fill what's left.
+            pinned ? "absolute justify-start pb-3 pt-[4.5rem] lg:py-12" : "relative justify-center rounded-[1.75rem] py-8 sm:rounded-[2.25rem]",
           )}
         >
           <Backdrop tones={tab.tones} />
@@ -246,7 +247,11 @@ function Switcher() {
           <div
             id="hero-scene"
             role="tabpanel"
-            className="relative z-10 mt-3 grid w-full max-w-6xl items-center gap-4 rounded-[1.5rem] bg-card/95 p-4 shadow-xl sm:mt-5 sm:gap-6 sm:p-5 shadow-primary/10 ring-1 ring-foreground/[0.05] backdrop-blur sm:p-8 md:grid-cols-[1fr_1.15fr] md:gap-12 md:p-10 lg:p-12"
+            className={cn(
+              // Pinned on a phone: the card fills the panel, and the picture takes whatever height the words leave.
+              pinned && "max-lg:min-h-0 max-lg:flex-1 max-lg:grid-rows-[auto_minmax(0,1fr)] max-lg:items-stretch",
+              "relative z-10 mt-3 grid w-full max-w-6xl items-center gap-4 rounded-[1.5rem] bg-card/95 p-4 shadow-xl sm:mt-5 sm:gap-6 sm:p-5 shadow-primary/10 ring-1 ring-foreground/[0.05] backdrop-blur sm:p-8 md:grid-cols-[1fr_1.15fr] md:gap-12 md:p-10 lg:p-12",
+            )}
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
@@ -260,10 +265,10 @@ function Switcher() {
                   <HugeiconsIcon icon={tab.icon} strokeWidth={2} className="h-4 w-4" />
                   {tab.label}
                 </p>
-                <h2 className="mt-2 text-[1.5rem] font-medium leading-[1.1] tracking-[-0.03em] text-balance text-foreground sm:mt-3 sm:text-4xl lg:text-[2.75rem]">
+                <h2 className="mt-2 text-[1.65rem] font-medium leading-[1.1] tracking-[-0.03em] text-balance text-foreground sm:mt-3 sm:text-4xl lg:text-[2.75rem]">
                   {tab.title}
                 </h2>
-                <p className="mt-2.5 max-w-md text-[14px] leading-relaxed text-pretty text-muted-foreground sm:mt-4 sm:text-[15px]">{tab.body}</p>
+                <p className="mt-2.5 max-w-md text-[15px] leading-relaxed text-pretty text-muted-foreground sm:mt-4">{tab.body}</p>
                 <Link
                   href={tab.href}
                   className="group mt-6 hidden items-center gap-1.5 border-b border-foreground/25 pb-1 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary sm:inline-flex"
@@ -274,7 +279,7 @@ function Switcher() {
               </motion.div>
             </AnimatePresence>
 
-            <div className={cn("relative overflow-hidden rounded-2xl bg-muted/70 ring-1 ring-foreground/[0.04] sm:h-[310px] lg:h-[400px]", pinned ? "h-[min(270px,36svh)]" : "h-[270px]")}>
+            <div className={cn("relative overflow-hidden rounded-2xl bg-muted/70 ring-1 ring-foreground/[0.04] sm:h-[310px] lg:h-[400px]", pinned ? "min-h-[170px] max-lg:h-full" : "h-[270px]")}>
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={`scene-${tab.id}`}
