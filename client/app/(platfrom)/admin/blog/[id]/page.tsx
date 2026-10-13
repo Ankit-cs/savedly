@@ -1,13 +1,12 @@
 "use client";
 
-import React, { use, useEffect, useRef, useState, type KeyboardEvent } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowLeft01Icon as Back,
-  Cancel01Icon as Remove,
   ImageAdd01Icon as ImageAdd,
   Settings02Icon as SettingsIcon,
   ViewIcon as Eye,
@@ -21,6 +20,9 @@ import { ApiError } from "@/lib/auth";
 import { createBlogPost, getBlogPost, slugify, updateBlogPost, type BlogPost, type BlogPostInput } from "@/lib/blog";
 import { PostBody } from "@/components/blog/post-body";
 import { MarkdownEditor } from "@/components/blog/markdown-editor";
+import SegmentedControl from "@/components/arc/segmented-control/segmented-control";
+import { TagInput } from "@/components/arc/tag-input/tag-input";
+import { Badge } from "@/components/arc/badge/badge";
 import { RichTextEditor, htmlToMarkdown, markdownToHtml, type RichTextEditorHandle } from "@/components/arc/rich-text-editor/rich-text-editor";
 
 const MAX_EXCERPT = 400;
@@ -75,50 +77,6 @@ function problem(draft: Draft, isNew: boolean): string | null {
 }
 
 const label = "block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground";
-
-/** Tags as chips: Enter or a comma adds one, Backspace on an empty box takes the last one off. */
-function TagInput({ tags, onChange }: { tags: string[]; onChange: (tags: string[]) => void }) {
-  const [text, setText] = useState("");
-  const full = tags.length >= MAX_TAGS;
-
-  const add = (raw: string) => {
-    const next = raw.split(",").map((t) => t.trim().slice(0, 40)).filter((t) => t && !tags.includes(t));
-    if (next.length) onChange([...tags, ...next].slice(0, MAX_TAGS));
-    setText("");
-  };
-
-  const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      add(text);
-    } else if (e.key === "Backspace" && !text && tags.length) {
-      onChange(tags.slice(0, -1));
-    }
-  };
-
-  return (
-    <div className="mt-1.5 flex flex-wrap items-center gap-1.5 rounded-md border border-input bg-input/20 px-2 py-1.5 focus-within:ring-2 focus-within:ring-ring/40">
-      {tags.map((tag) => (
-        <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-muted py-0.5 pr-1 pl-2.5 text-xs font-medium text-foreground">
-          {tag}
-          <button type="button" aria-label={`Remove the tag ${tag}`} onClick={() => onChange(tags.filter((t) => t !== tag))} className="flex h-4 w-4 items-center justify-center rounded-full text-muted-foreground hover:bg-background hover:text-foreground">
-            <HugeiconsIcon icon={Remove} strokeWidth={2.5} className="h-2.5 w-2.5" />
-          </button>
-        </span>
-      ))}
-      <input
-        id="post-tags"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        onKeyDown={onKeyDown}
-        onBlur={() => text.trim() && add(text)}
-        disabled={full}
-        placeholder={full ? `${MAX_TAGS} at most` : tags.length ? "Add another" : "product, engineering"}
-        className="h-6 min-w-[6rem] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/70 disabled:cursor-not-allowed"
-      />
-    </div>
-  );
-}
 
 export default function BlogEditorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -283,14 +241,9 @@ export default function BlogEditorPage({ params }: { params: Promise<{ id: strin
           <Link href="/admin/blog" aria-label="Back to all posts" className={buttonVariants({ variant: "ghost", size: "icon-sm" })}>
             <HugeiconsIcon icon={Back} strokeWidth={2} className="h-4 w-4" />
           </Link>
-          <span
-            className={cn(
-              "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
-              published ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-muted text-muted-foreground",
-            )}
-          >
+          <Badge tone={published ? "success" : "neutral"} size="sm" className="shrink-0">
             {published ? "Published" : "Draft"}
-          </span>
+          </Badge>
           <span role="status" className={cn("truncate text-xs", dirty && saving !== "save" ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground")}>
             {saveState}
           </span>
@@ -400,24 +353,20 @@ export default function BlogEditorPage({ params }: { params: Promise<{ id: strin
           {/* The writing box */}
           <div className="mt-6 overflow-hidden rounded-xl border border-border bg-card">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-muted/40 px-3 py-2">
-              <div role="tablist" aria-label="View" className="inline-flex rounded-lg bg-muted p-0.5 text-xs font-medium">
-                {(["write", "markdown", "preview"] as const).map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    role="tab"
-                    aria-selected={view === value}
-                    onClick={() => {
-                      // Coming back to the visual editor, it takes whatever the Markdown now says.
-                      if (value === "write" && view !== "write") fillRich(draft.content);
-                      setView(value);
-                    }}
-                    className={cn("rounded-md px-3 py-1 transition-colors", view === value ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
-                  >
-                    {value === "write" ? "Write" : value === "markdown" ? "Markdown" : "Preview"}
-                  </button>
-                ))}
-              </div>
+              <SegmentedControl
+                label="View"
+                value={view}
+                onValueChange={(value) => {
+                  // Coming back to the visual editor, it takes whatever the Markdown now says.
+                  if (value === "write" && view !== "write") fillRich(draft.content);
+                  setView(value as View);
+                }}
+                options={[
+                  { value: "write", label: "Write" },
+                  { value: "markdown", label: "Markdown" },
+                  { value: "preview", label: "Preview" },
+                ]}
+              />
               <div className="flex items-center gap-3">
                 <span className="text-[11px] tabular-nums text-muted-foreground">
                   {words.toLocaleString()} {words === 1 ? "word" : "words"} · {Math.max(1, Math.ceil(words / 220))} min read
@@ -451,7 +400,7 @@ export default function BlogEditorPage({ params }: { params: Promise<{ id: strin
                   placeholder="Start writing…"
                   blockHint="Type / for headings, lists and images"
                   className="mx-auto max-w-[44rem]"
-                  style={{ "--text-base": "17px" } as React.CSSProperties}
+                  style={{ "--arc-text-base": "17px" } as React.CSSProperties}
                 />
               </div>
             )}
@@ -504,13 +453,14 @@ export default function BlogEditorPage({ params }: { params: Promise<{ id: strin
               {published && draft.slug !== saved.slug && <p className="mt-1 text-[11px] text-amber-600 dark:text-amber-400">Changing this breaks links to the post that are already out there.</p>}
             </div>
 
-            <div>
-              <label htmlFor="post-tags" className={label}>
-                Tags
-              </label>
-              <TagInput tags={draft.tags} onChange={(tags) => set("tags", tags)} />
-              <p className="mt-1 text-[11px] text-muted-foreground">Press Enter after each one. Up to {MAX_TAGS}.</p>
-            </div>
+            <TagInput
+              id="post-tags"
+              label="Tags"
+              value={draft.tags}
+              onValueChange={(tags) => set("tags", tags.slice(0, MAX_TAGS))}
+              placeholder="Add a tag"
+              description={`Press Enter after each one. Up to ${MAX_TAGS}.`}
+            />
 
             <div>
               <label htmlFor="post-author" className={label}>

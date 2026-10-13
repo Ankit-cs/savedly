@@ -1,23 +1,4 @@
-/* The component is written for uiarc's design tokens. This app has its own
-   (app/globals.css), so the ones it needs are defined here from ours. */
 .root {
-  --accent: var(--primary);
-  --accent-strong: var(--primary);
-  --accent-subtle: color-mix(in oklab, var(--primary) 12%, transparent);
-  --accent-foreground: var(--primary-foreground);
-  --text-secondary: color-mix(in oklab, var(--foreground) 78%, transparent);
-  --text-muted: var(--muted-foreground);
-  --surface-muted: var(--muted);
-  --surface-raised: var(--popover);
-  --border-subtle: color-mix(in oklab, var(--foreground) 10%, transparent);
-  --border-strong: color-mix(in oklab, var(--foreground) 25%, transparent);
-  --shadow-floating: 0 12px 32px rgb(0 0 0 / 0.16), 0 0 0 1px color-mix(in oklab, var(--foreground) 10%, transparent);
-  --font-body: inherit;
-  --tracking-body: normal;
-  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
-  --duration-instant: 120ms;
-  --duration-fast: 160ms;
-  --duration-standard: 240ms;
   position: relative;
   width: 100%;
   container-type: inline-size;
@@ -32,16 +13,16 @@
   padding: 2px 0;
   outline: none;
   color: var(--foreground);
-  font-size: var(--text-base);
+  font-size: var(--arc-text-base);
   line-height: 1.65;
   overflow-wrap: break-word;
   white-space: pre-wrap;
   word-break: break-word;
-  caret-color: var(--accent);
+  caret-color: var(--arc-accent);
 }
 .editor[contenteditable="false"] { caret-color: transparent; }
 .editor::selection,
-.editor *::selection { background: color-mix(in oklab, var(--accent) 22%, transparent); }
+.editor *::selection { background: color-mix(in oklab, var(--arc-accent) 22%, transparent); }
 
 .editor > * { margin: 0; }
 .editor > * + * { margin-top: .9em; }
@@ -61,7 +42,7 @@
 
 .editor strong { font-weight: 600; }
 .editor s { color: var(--text-secondary); text-decoration-thickness: 1px; }
-.editor a { color: var(--accent-strong); text-decoration: underline; text-decoration-color: color-mix(in oklab, var(--accent) 45%, transparent); text-decoration-thickness: 1px; text-underline-offset: 3px; cursor: text; }
+.editor a { color: var(--accent-strong); text-decoration: underline; text-decoration-color: color-mix(in oklab, var(--arc-accent) 45%, transparent); text-decoration-thickness: 1px; text-underline-offset: 3px; cursor: text; }
 .editor code {
   padding: .12em .38em;
   border-radius: 6px;
@@ -91,7 +72,7 @@
   border-radius: 14px;
   background: var(--surface-muted);
   font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  font-size: var(--text-sm);
+  font-size: var(--arc-text-sm);
   line-height: 1.6;
   tab-size: 2;
   white-space: pre;
@@ -175,7 +156,7 @@
   background: transparent;
   color: var(--foreground);
   font: inherit;
-  font-size: var(--text-sm);
+  font-size: var(--arc-text-sm);
   outline: none;
 }
 .linkInput::placeholder { color: var(--text-muted); }
@@ -193,7 +174,7 @@
   cursor: pointer;
   transition: background-color var(--duration-standard) var(--ease-standard), color var(--duration-standard) var(--ease-standard), transform var(--duration-instant) var(--ease-standard);
 }
-.apply[data-ready] { background: var(--accent); color: var(--accent-foreground); }
+.apply[data-ready] { background: var(--arc-accent); color: var(--arc-accent-foreground); }
 .apply:active { transform: scale(.92); }
 
 /* Slash menu. */
@@ -225,13 +206,13 @@
   border-radius: 12px;
   color: var(--text-secondary);
   cursor: pointer;
-  font-size: var(--text-sm);
+  font-size: var(--arc-text-sm);
   -webkit-tap-highlight-color: transparent;
   transition: color var(--duration-fast) var(--ease-standard);
 }
 .slashOption[aria-selected="true"] { color: var(--foreground); }
 .slashIcon { display: grid; width: 20px; flex: none; place-items: center; }
 .slashLabel { min-width: 0; flex: 1; overflow: hidden; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
-.slashHint { flex: none; color: var(--text-muted); font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: var(--text-xs); }
+.slashHint { flex: none; color: var(--text-muted); font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: var(--arc-text-xs); }
 
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
