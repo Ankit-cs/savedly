@@ -99,6 +99,32 @@ function usePinned(): boolean {
   return wide && !reduce;
 }
 
+// The demos are drawn for a box about this tall. In a taller box (a tall
+// phone, where the picture gets whatever height the words leave) they are
+// enlarged to fit, up to a limit: past it they would be too narrow to read.
+const SCENE_BASE_HEIGHT = 220;
+const SCENE_MAX_SCALE = 1.18;
+
+/** How much to enlarge the demo so it fills its box. 1 until measured, and on wide screens, which size it in CSS. */
+function useSceneScale(box: React.RefObject<HTMLDivElement | null>, enabled: boolean): number {
+  const [scale, setScale] = useState(1);
+  useEffect(() => {
+    const el = box.current;
+    if (!enabled || !el) return;
+    const narrow = window.matchMedia("(max-width: 1023px)");
+    const measure = () => setScale(narrow.matches ? Math.min(SCENE_MAX_SCALE, Math.max(1, el.clientHeight / SCENE_BASE_HEIGHT)) : 1);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    narrow.addEventListener("change", measure);
+    return () => {
+      observer.disconnect();
+      narrow.removeEventListener("change", measure);
+    };
+  }, [box, enabled]);
+  return enabled ? scale : 1;
+}
+
 /** The soft, slowly drifting colour behind the scenes. */
 function Backdrop({ tones }: { tones: [string, string, string] }) {
   const reduce = useReducedMotion();
@@ -134,6 +160,8 @@ function Switcher() {
   const pinned = usePinned();
   const reduce = useReducedMotion();
   const track = useRef<HTMLDivElement>(null);
+  const sceneBox = useRef<HTMLDivElement>(null);
+  const sceneScale = useSceneScale(sceneBox, pinned);
   const [active, setActive] = useState(0);
   const [touched, setTouched] = useState(false);
   const { scrollYProgress } = useScroll({ target: track, offset: ["start start", "end end"] });
@@ -265,13 +293,13 @@ function Switcher() {
                   <HugeiconsIcon icon={tab.icon} strokeWidth={2} className="h-4 w-4" />
                   {tab.label}
                 </p>
-                <h2 className="mt-2 text-[1.65rem] font-medium leading-[1.1] tracking-[-0.03em] text-balance text-foreground sm:mt-3 sm:text-4xl lg:text-[2.75rem]">
+                <h2 className={cn("mt-2 font-medium leading-[1.1] tracking-[-0.03em] text-balance text-foreground sm:mt-3 sm:text-4xl lg:text-[2.75rem]", pinned ? "text-[clamp(1.65rem,3.9svh,2.15rem)]" : "text-[1.65rem]")}>
                   {tab.title}
                 </h2>
-                <p className="mt-2.5 max-w-md text-[15px] leading-relaxed text-pretty text-muted-foreground sm:mt-4">{tab.body}</p>
+                <p className={cn("mt-2.5 max-w-md leading-relaxed text-pretty text-muted-foreground sm:mt-4 sm:text-[15px]", pinned ? "text-[clamp(15px,2.1svh,17.5px)]" : "text-[15px]")}>{tab.body}</p>
                 <Link
                   href={tab.href}
-                  className="group mt-6 hidden items-center gap-1.5 border-b border-foreground/25 pb-1 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary sm:inline-flex"
+                  className="group mt-4 hidden items-center gap-1.5 border-b border-foreground/25 pb-1 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary sm:mt-6 sm:inline-flex [@media(min-height:780px)]:inline-flex"
                 >
                   See how it works
                   <HugeiconsIcon icon={ArrowRightIcon} strokeWidth={2} className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -279,7 +307,7 @@ function Switcher() {
               </motion.div>
             </AnimatePresence>
 
-            <div className={cn("relative overflow-hidden rounded-2xl bg-muted/70 ring-1 ring-foreground/[0.04] sm:h-[310px] lg:h-[400px]", pinned ? "min-h-[170px] max-lg:h-full" : "h-[270px]")}>
+            <div ref={sceneBox} className={cn("relative overflow-hidden rounded-2xl bg-muted/70 ring-1 ring-foreground/[0.04] sm:h-[310px] lg:h-[400px]", pinned ? "min-h-[170px] max-lg:h-full" : "h-[270px]")}>
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={`scene-${tab.id}`}
@@ -289,8 +317,14 @@ function Switcher() {
                   exit={reduce ? undefined : { opacity: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  {/* Drawn at phone size, enlarged where there is room. */}
-                  <div className="h-full w-full lg:h-[80%] lg:w-[80%] lg:origin-top-left lg:scale-125">
+                  {/* Drawn at phone size, enlarged where there is room: by a fixed
+                      amount on a wide screen, and to fit the box on a tall phone. A
+                      box drawn smaller by the same factor it is then enlarged by
+                      ends up exactly filling the space. */}
+                  <div
+                    className="h-full w-full origin-top-left lg:h-[80%] lg:w-[80%] lg:scale-125"
+                    style={sceneScale > 1 ? { width: `${100 / sceneScale}%`, height: `${100 / sceneScale}%`, transform: `scale(${sceneScale})` } : undefined}
+                  >
                     <Scene />
                   </div>
                 </motion.div>
