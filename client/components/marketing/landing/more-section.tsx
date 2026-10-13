@@ -3,8 +3,8 @@ import Link from "next/link";
 // Everything the product does that the sections above don't show, as a plain
 // list: a reader scanning for one thing ("can I share it?", "does it work on
 // my phone?") finds it here. Each line is something in the app today; what is
-// only planned (the browser extension, voice transcription) is left out, and
-// anything tied to a paid plan says so.
+// only planned is either left out (voice transcription) or named as planned
+// (the connectors still to come), and anything tied to a paid plan says so.
 
 const GROUPS: { title: string; href: string; items: string[] }[] = [
   {
@@ -35,7 +35,6 @@ const GROUPS: { title: string; href: string; items: string[] }[] = [
     href: "/help/docs/stay/calendar",
     items: [
       "A calendar of the dates found in what you save",
-      "Google Calendar sync",
       "Add or move an event by asking",
       "Notifications when a date or a duplicate turns up",
     ],
@@ -48,6 +47,25 @@ const GROUPS: { title: string; href: string; items: string[] }[] = [
       "A graph of how your memories connect",
       "Insights into what you save, and when",
       "Favorites, Archive, and a Trash that waits 15 days",
+    ],
+  },
+  {
+    title: "Keep private",
+    href: "/help/docs/share/vault",
+    items: [
+      "A vault for what nobody else should see (Lite and Pro)",
+      "Opens with a PIN you choose",
+      "Vaulted items stay out of search, Ask and the graph",
+      "Blurs when you switch away, and locks when you leave",
+    ],
+  },
+  {
+    title: "Connect",
+    href: "/help/docs/stay/calendar",
+    items: [
+      "Google Calendar: your events here, and yours added there",
+      "GitHub: the repositories you star join your library",
+      "Planned next: Notion, Raindrop, Reddit, YouTube and a browser extension",
     ],
   },
   {
@@ -83,7 +101,7 @@ export function MoreSection() {
           </p>
         </div>
 
-        <div className="mt-12 grid gap-x-12 border-t border-foreground/15 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 grid gap-x-10 border-t border-foreground/15 sm:grid-cols-2 lg:grid-cols-4">
           {GROUPS.map((group) => (
             <div key={group.title} className="border-b border-foreground/15 py-8">
               <h3 className="text-lg font-medium tracking-[-0.01em] text-foreground">
