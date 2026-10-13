@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useRef, useState, type KeyboardEvent } from "react";
+import React, { use, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -20,13 +20,14 @@ import { uploadFile } from "@/lib/uploads";
 import { ApiError } from "@/lib/auth";
 import { createBlogPost, getBlogPost, slugify, updateBlogPost, type BlogPost, type BlogPostInput } from "@/lib/blog";
 import { PostBody } from "@/components/blog/post-body";
-import { MarkdownEditor, type MarkdownEditorHandle } from "@/components/blog/markdown-editor";
+import { MarkdownEditor } from "@/components/blog/markdown-editor";
+import { RichTextEditor, htmlToMarkdown, markdownToHtml, type RichTextEditorHandle } from "@/components/arc/rich-text-editor/rich-text-editor";
 
 const MAX_EXCERPT = 400;
 const MAX_TAGS = 8;
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-type View = "write" | "split" | "preview";
+type View = "write" | "markdown" | "preview";
 type SaveAction = "save" | "publish" | "unpublish";
 
 interface Draft {
@@ -137,8 +138,15 @@ export default function BlogEditorPage({ params }: { params: Promise<{ id: strin
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [coverBusy, setCoverBusy] = useState(false);
   const [coverBroken, setCoverBroken] = useState(false);
-  const editor = useRef<MarkdownEditorHandle>(null);
-  const preview = useRef<HTMLDivElement>(null);
+  const rich = useRef<RichTextEditorHandle>(null);
+  const [uploadingImages, setUploadingImages] = useState(0);
+  // The visual editor is filled once, when it appears: on load, and on coming
+  // back from the Markdown view. `source` is the Markdown it was filled with
+  // and `baseline` what that reads back as, so that opening a post and
+  // touching nothing doesn't count as a change (the editor writes "_italic_"
+  // where the post may say "*italic*").
+  const [richFill, setRichFill] = useState({ key: 0, source: "", baseline: "" });
+  const fillRich = (source: string) => setRichFill((prev) => ({ key: prev.key + 1, source, baseline: htmlToMarkdown(markdownToHtml(source)) }));
   const loadedFor = useRef<string | null>(null);
 
   // Fill the form once per post, not on every refetch: a refetch mustn't wipe what's being typed.
@@ -149,6 +157,7 @@ export default function BlogEditorPage({ params }: { params: Promise<{ id: strin
       setDraft(next);
       setSaved(next);
       setSlugTouched(true);
+      fillRich(next.content);
     }
   }, [post]);
 
@@ -247,15 +256,6 @@ export default function BlogEditorPage({ params }: { params: Promise<{ id: strin
     } finally {
       setCoverBusy(false);
     }
-  };
-
-  // In the side-by-side view, the preview follows the writing box.
-  const syncScroll = () => {
-    const from = editor.current?.textarea;
-    const to = preview.current;
-    if (!from || !to || view !== "split") return;
-    const ratio = from.scrollTop / Math.max(1, from.scrollHeight - from.clientHeight);
-    to.scrollTop = ratio * (to.scrollHeight - to.clientHeight);
   };
 
   if (!isNew && isLoading) return <p className="text-xs text-muted-foreground">Loading…</p>;
@@ -399,58 +399,84 @@ export default function BlogEditorPage({ params }: { params: Promise<{ id: strin
 
           {/* The writing box */}
           <div className="mt-6 overflow-hidden rounded-xl border border-border bg-card">
-            <div className="flex items-center justify-between gap-3 border-b border-border bg-muted/40 px-3 py-2">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-muted/40 px-3 py-2">
               <div role="tablist" aria-label="View" className="inline-flex rounded-lg bg-muted p-0.5 text-xs font-medium">
-                {(["write", "split", "preview"] as const).map((value) => (
+                {(["write", "markdown", "preview"] as const).map((value) => (
                   <button
                     key={value}
                     type="button"
                     role="tab"
                     aria-selected={view === value}
                     onClick={() => {
+                      // Coming back to the visual editor, it takes whatever the Markdown now says.
+                      if (value === "write" && view !== "write") fillRich(draft.content);
                       setView(value);
-                      // Side by side needs the width the details panel takes.
-                      if (value === "split") setShowSettings(false);
                     }}
-                    className={cn(
-                      "rounded-md px-3 py-1 transition-colors",
-                      value === "split" && "hidden lg:block",
-                      view === value ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
-                    )}
+                    className={cn("rounded-md px-3 py-1 transition-colors", view === value ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
                   >
-                    {value === "write" ? "Write" : value === "split" ? "Side by side" : "Preview"}
+                    {value === "write" ? "Write" : value === "markdown" ? "Markdown" : "Preview"}
                   </button>
                 ))}
               </div>
-              <span className="text-[11px] tabular-nums text-muted-foreground">
-                {words.toLocaleString()} {words === 1 ? "word" : "words"} · {Math.max(1, Math.ceil(words / 220))} min read
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-[11px] tabular-nums text-muted-foreground">
+                  {words.toLocaleString()} {words === 1 ? "word" : "words"} · {Math.max(1, Math.ceil(words / 220))} min read
+                </span>
+                {view === "write" && (
+                  <Button variant="outline" size="sm" disabled={uploadingImages > 0} onClick={() => rich.current?.pickImage()}>
+                    <HugeiconsIcon icon={ImageAdd} strokeWidth={2} className="h-4 w-4" />
+                    {uploadingImages > 0 ? "Uploading…" : "Add image"}
+                  </Button>
+                )}
+              </div>
             </div>
 
-            <div className={cn("grid h-[max(26rem,calc(100svh-15rem))]", view === "split" && "lg:grid-cols-2 lg:divide-x lg:divide-border")}>
+            {view === "write" && (
+              <div className="min-h-[max(26rem,calc(100svh-15rem))] cursor-text bg-background px-6 py-8 sm:px-10" onClick={(e) => e.target === e.currentTarget && rich.current?.focus()}>
+                <RichTextEditor
+                  key={richFill.key}
+                  ref={rich}
+                  aria-label="Post"
+                  defaultMarkdown={richFill.source}
+                  onChange={(value) => {
+                    // Untouched (or undone back to how it was filled): keep the post's own Markdown.
+                    const content = value.markdown === richFill.baseline ? richFill.source : value.markdown;
+                    setDraft((d) => (d.content === content ? d : { ...d, content }));
+                  }}
+                  onUploadImage={uploadImage}
+                  onUploadState={({ uploading, error }) => {
+                    setUploadingImages(uploading);
+                    if (error) toast.add({ title: "Couldn't add the image.", description: error, type: "error" });
+                  }}
+                  placeholder="Start writing…"
+                  blockHint="Type / for headings, lists and images"
+                  className="mx-auto max-w-[44rem]"
+                  style={{ "--text-base": "17px" } as React.CSSProperties}
+                />
+              </div>
+            )}
+
+            {view === "markdown" && (
               <MarkdownEditor
-                ref={editor}
                 value={draft.content}
                 onChange={(content) => set("content", content)}
                 onUploadImage={uploadImage}
                 onUploadError={(message) => toast.add({ title: "Couldn't add the image.", description: message, type: "error" })}
-                onScroll={syncScroll}
-                placeholder={"Start writing…\n\nUse the buttons above, or type Markdown: ## for a heading, **bold**, - for a list.\nPaste or drop an image to add it."}
-                className={cn("min-w-0", view === "preview" && "hidden")}
+                placeholder={"Write in Markdown: ## for a heading, **bold**, - for a list.\nPaste or drop an image to add it."}
+                className="h-[max(26rem,calc(100svh-15rem))]"
               />
-              {view !== "write" && (
-                <div ref={preview} aria-label="Preview" className="min-w-0 overflow-y-auto bg-background px-6 py-2 sm:px-8">
-                  {draft.content.trim() ? (
-                    <PostBody markdown={draft.content} className={cn("mx-auto max-w-[44rem]", view === "split" && "text-[15px] [&_h1]:text-[1.6rem] [&_h2]:text-[1.4rem]")} />
-                  ) : (
-                    <p className="py-16 text-center text-sm text-muted-foreground">Nothing to preview yet.</p>
-                  )}
-                </div>
-              )}
-            </div>
+            )}
+
+            {view === "preview" && (
+              <div aria-label="Preview" className="min-h-[max(26rem,calc(100svh-15rem))] bg-background px-6 py-2 sm:px-10">
+                {draft.content.trim() ? <PostBody markdown={draft.content} className="mx-auto max-w-[44rem]" /> : <p className="py-16 text-center text-sm text-muted-foreground">Nothing to preview yet.</p>}
+              </div>
+            )}
           </div>
           <p className="mt-2 text-[11px] text-muted-foreground">
-            Ctrl/⌘+S saves. Ctrl/⌘+B bold, I italic, K link. Paste or drop an image into the post to add it.
+            {view === "markdown"
+              ? "The post as Markdown. Tables and other things the Write view can't show are safe here, but editing them in Write may drop them."
+              : "Select text to format it or add a link. Type / on a new line for headings, lists, quotes and images. Paste or drop a picture to add it. Ctrl/⌘+S saves."}
           </p>
         </div>
 
