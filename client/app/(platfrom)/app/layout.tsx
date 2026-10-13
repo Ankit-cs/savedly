@@ -9,8 +9,7 @@ import { MaintenanceFullPage } from "@/components/maintenance/maintenance-full-p
 import { getMaintenanceStatus } from "@/lib/maintenance";
 import { AnimatePresence, motion } from "motion/react";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
-import { SparklesIcon as Sparkles, PlusIcon as Plus, Search01Icon as Search, Settings01Icon as Settings, HelpCircleIcon as HelpCircle, BellIcon as Bell, XIcon as X, MoonIcon as Moon, Sun01Icon as Sun, FolderOpenIcon as FolderOpen, CompassIcon as Compass, CheckIcon as Check, ChevronDownIcon as ChevronDown, FolderPlusIcon as FolderPlus, HeartIcon as Heart, Clock01Icon as Clock, CompassIcon, BarChartIcon as BarChart2, FileTextIcon as FileText, PaperclipIcon as Paperclip, CloudUploadIcon as UploadCloud, Layers01Icon as Layers, PanelLeftCloseIcon as PanelLeftClose, PanelLeftOpenIcon as PanelLeftOpen, Menu01Icon as Menu, Tag01Icon as Tag, KeyboardIcon as Keyboard, Archive01Icon as Archive, Delete02Icon as Trash2, TrendingUpIcon as TrendingUp, Plug01Icon as Plug, MessageSquarePlusIcon as MessageSquarePlus, HistoryIcon as History, ShieldUserIcon as ShieldUser, Share02Icon as Share2, LockPasswordIcon as VaultIcon, Calendar03Icon as CalendarIcon } from "@hugeicons/core-free-icons";
-import { Button } from "@/components/ui/button";
+import { SparklesIcon as Sparkles, PlusIcon as Plus, Search01Icon as Search, Settings01Icon as Settings, HelpCircleIcon as HelpCircle, BellIcon as Bell, MoonIcon as Moon, Sun01Icon as Sun, FolderOpenIcon as FolderOpen, CompassIcon as Compass, CheckIcon as Check, ChevronDownIcon as ChevronDown, FolderPlusIcon as FolderPlus, HeartIcon as Heart, Clock01Icon as Clock, CompassIcon, BarChartIcon as BarChart2, CloudUploadIcon as UploadCloud, Layers01Icon as Layers, PanelLeftCloseIcon as PanelLeftClose, PanelLeftOpenIcon as PanelLeftOpen, Menu01Icon as Menu, Tag01Icon as Tag, KeyboardIcon as Keyboard, Archive01Icon as Archive, Delete02Icon as Trash2, TrendingUpIcon as TrendingUp, Plug01Icon as Plug, MessageSquarePlusIcon as MessageSquarePlus, HistoryIcon as History, ShieldUserIcon as ShieldUser, Share02Icon as Share2, LockPasswordIcon as VaultIcon, Calendar03Icon as CalendarIcon } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 import { logout } from "@/lib/auth";
 import { UserAvatar, UserProvider, useUser, useCurrentUserQuery, useSetCurrentUser } from "@/context/UserContext";
@@ -26,48 +25,26 @@ import { LiveEventDetectedPopup } from "@/components/memory/event-detected-popup
 import { DuplicateAskHost, LiveDuplicatePopup, wasDuplicatePopupDismissed } from "@/components/memory/duplicate-dialog";
 import { DuplicateSkippedError } from "@/context/MemoryContext";
 import { useLockVaultMutation } from "@/hooks/use-vault";
-import { PlanLimitNotice, ProBadge, LimitDot } from "@/components/plan-limit-notice";
+import { PlanLimitNotice, LimitDot } from "@/components/plan-limit-notice";
 import { detectMemoryType, deriveTitle, splitLinkAndCaption } from "@/lib/detect-memory-type";
-import { MEMORY_TYPE_ICONS } from "@/lib/memory-icons";
-import {
-  Command,
-  CommandInput,
-  CommandList,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-} from "@/components/ui/command";
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupText,
-  InputGroupTextarea,
-} from "@/components/ui/input-group";
-import {
-  Attachment,
-  AttachmentMedia,
-  AttachmentContent,
-  AttachmentTitle,
-  AttachmentDescription,
-  AttachmentActions,
-  AttachmentAction,
-} from "@/components/ui/attachment";
-import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
+import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { ResizablePanel, ResizablePanels } from "@/components/arc/resizable-panels/resizable-panels";
 import { CommandPalette, type CommandItem as PaletteItem } from "@/components/arc/command-palette/command-palette";
+import { Textarea as ArcTextarea } from "@/components/arc/textarea/textarea";
+import { Input as ArcInput } from "@/components/arc/input/input";
+import { Button as ArcButton } from "@/components/arc/button/button";
+import { Badge as ArcBadge } from "@/components/arc/badge/badge";
+import { FileDropzone, type FileDropzoneUpload } from "@/components/arc/file-dropzone/file-dropzone";
 import { ShortcutList, formatShortcut, usePlatform, type ShortcutListGroup } from "@/components/arc/shortcut-recorder/shortcut-recorder";
 import { Logo, LogoMark } from "@/components/logo";
 import { NextStepProvider, NextStep } from "nextstepjs";
@@ -211,6 +188,14 @@ function SidebarSection({
  * shown as removable chips above the trigger, instead of every collection
  * rendered flat as its own pill — which used to overflow the whole modal
  * once an account had more than a handful of collections. */
+/** How many collections Quick Capture shows before "Show all". */
+const CAPTURE_COLLECTIONS_SHOWN = 8;
+
+/**
+ * Collections to file a save under, as chips to switch on and off. Laid out
+ * in the form itself, not in a popover: it then works the same in the desktop
+ * dialog and in the phone's bottom sheet, and what is chosen is always in view.
+ */
 function CaptureCollectionPicker({
   collections,
   selectedIds,
@@ -220,68 +205,52 @@ function CaptureCollectionPicker({
   selectedIds: string[];
   onChange: (ids: string[]) => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const selected = collections.filter((c) => selectedIds.includes(c.id));
-  const sorted = [...collections].sort((a, b) => a.name.localeCompare(b.name));
+  const [showAll, setShowAll] = useState(false);
+  // Chosen ones first, so they stay in view when the list is cut short.
+  const sorted = [...collections].sort((a, b) => Number(selectedIds.includes(b.id)) - Number(selectedIds.includes(a.id)) || a.name.localeCompare(b.name));
+  const shown = showAll ? sorted : sorted.slice(0, Math.max(CAPTURE_COLLECTIONS_SHOWN, selectedIds.length));
+  const hidden = sorted.length - shown.length;
 
   const toggle = (id: string) => {
     onChange(selectedIds.includes(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id]);
   };
 
   return (
-    <div className="space-y-2">
-      <span className="block text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Collections</span>
-
-      {selected.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {selected.map((col) => (
-            <button
-              key={col.id}
-              type="button"
-              onClick={() => toggle(col.id)}
-              className="flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary"
-            >
-              <span aria-hidden>{col.icon}</span>
-              {col.name}
-              <HugeiconsIcon icon={X} strokeWidth={2.5} className="h-3 w-3" />
-            </button>
-          ))}
-        </div>
-      )}
+    <fieldset className="space-y-2">
+      <legend className="text-sm font-medium text-foreground">Collections</legend>
 
       {collections.length === 0 ? (
-        <p className="text-[11px] text-muted-foreground">No collections yet.</p>
+        <p className="text-sm text-muted-foreground">You have none yet. Savedly suggests one after you save.</p>
       ) : (
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger
-            className="flex h-9 items-center gap-1.5 rounded-full border border-dashed border-border px-3 text-[11px] font-medium text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground"
-          >
-            <HugeiconsIcon icon={FolderOpen} strokeWidth={2} className="h-3.5 w-3.5" />
-            {selected.length > 0 ? "Add another" : "Choose collections"}
-          </PopoverTrigger>
-          <PopoverContent align="start" className="w-72 max-w-[calc(100vw-3rem)] p-0">
-            <Command>
-              <CommandInput placeholder="Find a collection…" className="text-sm" />
-              <CommandList className="max-h-64">
-                <CommandEmpty className="text-sm text-muted-foreground">No collection with that name.</CommandEmpty>
-                <CommandGroup>
-                  {sorted.map((col) => {
-                    const isSelected = selectedIds.includes(col.id);
-                    return (
-                      <CommandItem key={col.id} value={`${col.name} ${col.id}`} data-checked={isSelected} onSelect={() => toggle(col.id)} title={col.name} className="py-2 text-sm">
-                        <span aria-hidden className="w-5 shrink-0 text-center">{col.icon}</span>
-                        <span className="min-w-0 flex-1 truncate">{col.name}</span>
-                        {isSelected && <HugeiconsIcon icon={Check} strokeWidth={2.5} className="h-3.5 w-3.5 shrink-0 text-primary" />}
-                      </CommandItem>
-                    );
-                  })}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
+        <div className="flex flex-wrap gap-1.5">
+          {shown.map((col) => {
+            const on = selectedIds.includes(col.id);
+            return (
+              <button
+                key={col.id}
+                type="button"
+                aria-pressed={on}
+                onClick={() => toggle(col.id)}
+                title={col.name}
+                className={cn(
+                  "inline-flex h-9 max-w-full items-center gap-1.5 rounded-full border px-3 text-sm transition-colors duration-150",
+                  on ? "border-primary/40 bg-primary/10 font-medium text-primary" : "border-border text-muted-foreground hover:border-foreground/25 hover:text-foreground",
+                )}
+              >
+                <span aria-hidden>{col.icon}</span>
+                <span className="truncate">{col.name}</span>
+                {on && <HugeiconsIcon icon={Check} strokeWidth={2.5} className="h-3.5 w-3.5 shrink-0" />}
+              </button>
+            );
+          })}
+          {hidden > 0 && (
+            <button type="button" onClick={() => setShowAll(true)} className="inline-flex h-9 items-center rounded-full px-3 text-sm font-medium text-foreground underline decoration-foreground/25 underline-offset-4 hover:decoration-foreground">
+              Show {hidden} more
+            </button>
+          )}
+        </div>
       )}
-    </div>
+    </fieldset>
   );
 }
 
@@ -455,10 +424,6 @@ function AppShell({ children }: { children: React.ReactNode }) {
   const [captureAttachmentName, setCaptureAttachmentName] = useState<string | null>(null);
   const [captureAttachmentMimeType, setCaptureAttachmentMimeType] = useState<string | null>(null);
   const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
-  const [attachmentError, setAttachmentError] = useState<string | null>(null);
-  const [isDraggingOver, setIsDraggingOver] = useState(false);
-  const dragCounter = useRef(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const captureFormRef = useRef<HTMLFormElement>(null);
   const [savedTitle, setSavedTitle] = useState("");
   const [savedCollections, setSavedCollections] = useState<{ id: string; name: string }[]>([]);
@@ -556,7 +521,6 @@ function AppShell({ children }: { children: React.ReactNode }) {
     () => detectMemoryType({ text: captureText, attachmentMimeType: captureAttachmentMimeType }),
     [captureText, captureAttachmentMimeType],
   );
-  const DetectedTypeIcon = MEMORY_TYPE_ICONS[detectedType];
   const detectedTypeLabel = detectedType === "web" ? "Website" : detectedType;
   const openCaptureModal = useCallback(() => {
     setSaveStep(1);
@@ -566,10 +530,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
     setCaptureAttachment(null);
     setCaptureAttachmentName(null);
     setCaptureAttachmentMimeType(null);
-    setAttachmentError(null);
     setSaveError(null);
-    setIsDraggingOver(false);
-    dragCounter.current = 0;
     setSaveModalOpen(true);
   }, [
     setSaveStep,
@@ -579,9 +540,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
     setCaptureAttachment,
     setCaptureAttachmentName,
     setCaptureAttachmentMimeType,
-    setAttachmentError,
     setSaveError,
-    setIsDraggingOver,
     setSaveModalOpen,
   ]);
 
@@ -597,72 +556,41 @@ function AppShell({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("capture:open", open);
   }, []);
 
-  const handleFileUpload = async (file: File) => {
-    if (storageLimit.isAtLimit) {
-      setAttachmentError(storageLimit.message ?? "You've reached your storage limit.");
-      return;
-    }
-    // Set the name/mime immediately so the Attachment preview (with its
-    // shimmer) can show the real filename and the right icon while the
-    // upload is still in flight, not just once it resolves.
-    setCaptureAttachmentName(file.name);
-    setCaptureAttachmentMimeType(file.type);
+  // The dropzone calls this for the file it was given. A rejection's message
+  // becomes the reason shown on the file's row.
+  const uploadForCapture: FileDropzoneUpload = async (item) => {
+    if (!item.file) return;
+    if (storageLimit.isAtLimit) throw new Error(storageLimit.message ?? "You've reached your storage limit.");
+    // Name and type first, so the "Saving as" line is right while it uploads.
+    setCaptureAttachmentName(item.name);
+    setCaptureAttachmentMimeType(item.file.type);
     setIsUploadingAttachment(true);
-    setAttachmentError(null);
     try {
-      const uploaded = await uploadFile(file);
-      setCaptureAttachment(uploaded);
-    } catch (err) {
-      setAttachmentError(err instanceof Error ? err.message : "Upload failed.");
+      setCaptureAttachment(await uploadFile(item.file));
     } finally {
       setIsUploadingAttachment(false);
     }
-  };
-
-  const handleAttachmentSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (file) void handleFileUpload(file);
   };
 
   const clearAttachment = () => {
     setCaptureAttachment(null);
     setCaptureAttachmentName(null);
     setCaptureAttachmentMimeType(null);
-    setAttachmentError(null);
   };
 
+  // A picture pasted into the text box (a screenshot, say) is handed to the
+  // dropzone as if it had been chosen there, so there is one place a file
+  // shows, uploads and can be removed.
+  const dropzoneRef = useRef<HTMLDivElement>(null);
   const handleCapturePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    const items = e.clipboardData?.items;
-    if (!items) return;
-    for (const item of items) {
-      if (item.kind === "file" && item.type.startsWith("image/")) {
-        e.preventDefault();
-        const file = item.getAsFile();
-        if (file) void handleFileUpload(file);
-        return;
-      }
-    }
-  };
-
-  const handleCaptureDragEnter = (e: React.DragEvent) => {
+    const file = Array.from(e.clipboardData?.items ?? []).find((item) => item.kind === "file" && item.type.startsWith("image/"))?.getAsFile();
+    const picker = dropzoneRef.current?.querySelector<HTMLInputElement>('input[type="file"]');
+    if (!file || !picker) return;
     e.preventDefault();
-    dragCounter.current += 1;
-    setIsDraggingOver(true);
-  };
-
-  const handleCaptureDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    dragCounter.current -= 1;
-    if (dragCounter.current <= 0) setIsDraggingOver(false);
-  };
-
-  const handleCaptureDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    dragCounter.current = 0;
-    setIsDraggingOver(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) void handleFileUpload(file);
+    const transfer = new DataTransfer();
+    transfer.items.add(file);
+    picker.files = transfer.files;
+    picker.dispatchEvent(new Event("change", { bubbles: true }));
   };
 
   const handleCaptureSubmit = async (e: React.FormEvent) => {
@@ -1330,185 +1258,139 @@ function AppShell({ children }: { children: React.ReactNode }) {
       </ResizablePanels>
       </div>
 
-      {/* GLOBAL QUICK CAPTURE MODAL */}
-      {saveModalOpen && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-card border border-border rounded-2xl w-full max-w-lg p-6 shadow-xl space-y-5 animate-scale-up">
+      {/* GLOBAL QUICK CAPTURE MODAL. A dialog on a desktop and a bottom
+          sheet on a phone (ResponsiveDialog), holding Arc's fields: a textarea, a file dropzone, an input and
+          a button that shows its own "saving" state. */}
+      <ResponsiveDialog
+        open={saveModalOpen}
+        onOpenChange={setSaveModalOpen}
+        title={saveStep === "done" ? "Saved" : "Add to Savedly"}
+        description="Save a link, a note or a file to your library."
+        hideDescription
+        className="sm:max-w-lg"
+      >
 
-            <div className="flex items-center justify-between border-b border-border/20 pb-2">
-              <span className="text-xs font-bold text-foreground">Add to Savedly</span>
-              <button onClick={() => setSaveModalOpen(false)} className="text-muted-foreground hover:text-foreground">
-                <HugeiconsIcon icon={X} strokeWidth={2.25} className="h-4 w-4" />
-              </button>
-            </div>
-
+          <AnimatePresence mode="wait" initial={false}>
             {saveStep === 1 && (
-              <form ref={captureFormRef} onSubmit={handleCaptureSubmit} className="space-y-4">
+              <motion.form
+                key="form"
+                ref={captureFormRef}
+                onSubmit={handleCaptureSubmit}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, transition: { duration: 0.12 } }}
+                transition={{ duration: 0.2 }}
+                className="space-y-5"
+              >
+                <ArcTextarea
+                  label="What do you want to save?"
+                  autoFocus
+                  rows={4}
+                  value={captureText}
+                  onChange={(e) => setCaptureText(e.target.value)}
+                  onPaste={handleCapturePaste}
+                  placeholder="Paste a link, or write a note"
+                  // Says what Savedly takes it to be, and changes as you type.
+                  description={captureText.trim() || captureAttachment ? `Saving as: ${detectedTypeLabel === "Website" ? "website" : detectedTypeLabel}` : undefined}
+                />
 
-                {/* Unified capture surface — paste a link, paste/drop a file, or just type */}
-                <div className="relative">
-                  {isDraggingOver && (
-                    <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-background/90 backdrop-blur-sm">
-                      <HugeiconsIcon icon={UploadCloud} strokeWidth={2.25} className="h-5 w-5 text-primary" />
-                      <p className="text-[10px] font-bold text-primary uppercase tracking-wide">Drop to attach</p>
-                    </div>
-                  )}
-
-                  <InputGroup
-                    onDragOver={(e) => e.preventDefault()}
-                    onDragEnter={handleCaptureDragEnter}
-                    onDragLeave={handleCaptureDragLeave}
-                    onDrop={handleCaptureDrop}
-                    className={cn(
-                      "h-auto rounded-2xl border-2 bg-muted/10 transition-colors",
-                      isDraggingOver ? "border-primary/70" : "border-border/60"
-                    )}
-                  >
-                    <InputGroupTextarea
-                      autoFocus
-                      value={captureText}
-                      onChange={(e) => setCaptureText(e.target.value)}
-                      onPaste={handleCapturePaste}
-                      placeholder="Paste a link, drop a file, or start typing a note..."
-                      rows={captureAttachment || isUploadingAttachment ? 3 : 5}
-                      className="px-4 py-3.5 text-sm placeholder:text-muted-foreground/70"
-                    />
-
-                    {(isUploadingAttachment || captureAttachment || attachmentError) && (
-                      <InputGroupAddon align="block-start" className="w-full justify-start px-3 pb-1">
-                        <Attachment
-                          state={attachmentError ? "error" : isUploadingAttachment ? "uploading" : "done"}
-                          size="sm"
-                          className="w-full max-w-full border-border/60 bg-background/70"
-                        >
-                          <AttachmentMedia variant={captureAttachmentMimeType?.startsWith("image/") ? "image" : "icon"}>
-                            {captureAttachmentMimeType?.startsWith("image/") && captureAttachment ? (
-                              // eslint-disable-next-line @next/next/no-img-element -- external, unpredictable-domain preview image
-                              <img src={captureAttachment.fileUrl} alt="" />
-                            ) : (
-                              <HugeiconsIcon icon={FileText} strokeWidth={2.25} />
-                            )}
-                          </AttachmentMedia>
-                          <AttachmentContent>
-                            <AttachmentTitle>{captureAttachmentName ?? "Attachment"}</AttachmentTitle>
-                            <AttachmentDescription>
-                              {attachmentError ??
-                                (isUploadingAttachment
-                                  ? "Uploading…"
-                                  : captureAttachment
-                                    ? `${(captureAttachment.fileSize / 1024).toFixed(0)} KB`
-                                    : "")}
-                            </AttachmentDescription>
-                          </AttachmentContent>
-                          <AttachmentActions>
-                            <AttachmentAction type="button" aria-label={`Remove ${captureAttachmentName ?? "attachment"}`} onClick={clearAttachment}>
-                              <HugeiconsIcon icon={X} strokeWidth={2.25} />
-                            </AttachmentAction>
-                          </AttachmentActions>
-                        </Attachment>
-                      </InputGroupAddon>
-                    )}
-
-                    <InputGroupAddon align="block-end" className="w-full justify-between border-t border-border/40 bg-muted/20 px-3 py-2">
-                      <InputGroupButton
-                        type="button"
-                        disabled={storageLimit.isAtLimit}
-                        title={storageLimit.isAtLimit ? storageLimit.message ?? undefined : undefined}
-                        onClick={() => fileInputRef.current?.click()}
-                        className={storageLimit.isAtLimit ? "opacity-50 cursor-not-allowed" : undefined}
-                      >
-                        <HugeiconsIcon icon={Paperclip} strokeWidth={2.25} className="h-3.5 w-3.5" />
-                        Attach
-                        {storageLimit.isAtLimit && <ProBadge className="ml-1" />}
-                      </InputGroupButton>
-
-                      <InputGroupText className="rounded-full bg-primary/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide text-primary">
-                        <HugeiconsIcon icon={DetectedTypeIcon} strokeWidth={2.25} className="h-3 w-3" />
-                        {detectedTypeLabel}
-                      </InputGroupText>
-                    </InputGroupAddon>
-                  </InputGroup>
-
-                  <input ref={fileInputRef} type="file" onChange={handleAttachmentSelect} className="hidden" />
+                {/* One file per save. A picture pasted into the box above lands here too. */}
+                <div ref={dropzoneRef}>
+                  <FileDropzone
+                    multiple={false}
+                    maxFiles={1}
+                    label="Attach a file"
+                    description="Drop it here, paste it, or choose from your device"
+                    note="An image, PDF or document"
+                    listPlacement="inside"
+                    compactAt={1}
+                    onUpload={uploadForCapture}
+                    onFilesChange={(files) => {
+                      if (files.length === 0) clearAttachment();
+                    }}
+                  />
                 </div>
 
-                <Input
-                  type="text"
-                  placeholder="Add a title (optional)"
+                <ArcInput
+                  label="Title"
+                  placeholder="Optional. One is written for you if you leave this empty"
                   value={captureTitle}
                   onChange={(e) => setCaptureTitle(e.target.value)}
-                  className="h-auto w-full rounded-xl border-input bg-background px-4 py-3 text-xs text-foreground focus-visible:border-primary/80 focus-visible:ring-primary/20"
                 />
 
-                <CaptureCollectionPicker
-                  collections={collections}
-                  selectedIds={captureCollectionIds}
-                  onChange={setCaptureCollectionIds}
-                />
+                <CaptureCollectionPicker collections={collections} selectedIds={captureCollectionIds} onChange={setCaptureCollectionIds} />
 
                 {memoryLimit.isAtLimit ? (
                   <PlanLimitNotice message={memoryLimit.message ?? "You've reached your memory limit."} />
                 ) : (
-                  saveError && <p className="text-[10px] text-red-500">{saveError}</p>
+                  saveError && (
+                    <p role="alert" className="text-sm text-destructive">
+                      {saveError}
+                    </p>
+                  )
                 )}
 
-                <Button
+                <ArcButton
                   type="submit"
-                  disabled={isSaving || isUploadingAttachment || memoryLimit.isAtLimit || (!captureText.trim() && !captureAttachment)}
+                  size="lg"
+                  loading={isSaving}
+                  disabled={isUploadingAttachment || memoryLimit.isAtLimit || (!captureText.trim() && !captureAttachment)}
                   title={memoryLimit.isAtLimit ? memoryLimit.message ?? undefined : undefined}
-                  className={cn(
-                    "w-full h-11 rounded-full font-bold text-xs bg-primary text-white",
-                    memoryLimit.isAtLimit && "opacity-50 cursor-not-allowed",
-                  )}
+                  className="w-full"
                 >
-                  {isSaving ? "Saving..." : memoryLimit.isAtLimit ? (
-                    <span className="flex items-center justify-center gap-1.5">
-                      Limit reached <ProBadge />
-                    </span>
-                  ) : (
-                    "Save Memory"
-                  )}
-                </Button>
-              </form>
+                  {memoryLimit.isAtLimit ? "Limit reached" : isUploadingAttachment ? "Uploading the file…" : "Save"}
+                </ArcButton>
+              </motion.form>
             )}
 
             {saveStep === "done" && (
-              <div className="text-center py-6 space-y-4">
-                <div className="h-10 w-10 bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 rounded-full flex items-center justify-center mx-auto shadow-xs">
-                  <HugeiconsIcon icon={Check} strokeWidth={2.25} className="h-5 w-5 stroke-[3]" />
+              <motion.div
+                key="done"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, transition: { duration: 0.12 } }}
+                transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                className="space-y-5 py-3 text-center"
+              >
+                <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                  <HugeiconsIcon icon={Check} strokeWidth={2.5} className="h-5 w-5" />
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest block">Saved to Savedly</span>
-                  <h4 className="text-xs font-bold text-foreground">{savedTitle}</h4>
+                  <p className="text-base font-medium text-balance text-foreground">{savedTitle}</p>
+                  <p className="text-sm text-muted-foreground">It&apos;s in your library. A summary and tags are added in a moment.</p>
                 </div>
 
                 {savedCollections.length > 0 && (
-                  <div className="flex flex-wrap justify-center gap-1">
+                  <div className="flex flex-wrap justify-center gap-1.5">
                     {savedCollections.map((c) => (
-                      <Link
-                        key={c.id}
-                        href={`/app/collections/${c.id}`}
-                        onClick={() => setSaveModalOpen(false)}
-                        className="text-[8px] font-bold uppercase bg-primary/5 border border-primary/10 text-primary px-2 py-0.5 rounded hover:bg-primary/10 transition-colors"
-                      >
-                        {c.name}
+                      <Link key={c.id} href={`/app/collections/${c.id}`} onClick={() => setSaveModalOpen(false)}>
+                        <ArcBadge tone="info" size="sm">
+                          {c.name}
+                        </ArcBadge>
                       </Link>
                     ))}
                   </div>
                 )}
 
-                <div className="pt-4 flex gap-2">
-                  <Button onClick={() => { setSaveModalOpen(false); router.push("/app/memories"); }} className="flex-1 h-10 rounded-full text-xs font-bold bg-primary text-white">
-                    View memory &rarr;
-                  </Button>
+                <div className="flex gap-2 pt-1">
+                  <ArcButton variant="secondary" className="flex-1" onClick={openCaptureModal}>
+                    Save another
+                  </ArcButton>
+                  <ArcButton
+                    className="flex-1"
+                    onClick={() => {
+                      setSaveModalOpen(false);
+                      router.push("/app/memories");
+                    }}
+                  >
+                    View memories
+                  </ArcButton>
                 </div>
-              </div>
+              </motion.div>
             )}
-
-          </div>
-        </div>
-      )}
+          </AnimatePresence>
+      </ResponsiveDialog>
 
       {/* Floating dock — replaces the collapsed sidebar, docked at the
           left-center of the screen like a desktop app dock. */}
@@ -1690,19 +1572,19 @@ function AppShell({ children }: { children: React.ReactNode }) {
       </Dialog>
 
       {/* KEYBOARD SHORTCUTS DIALOG */}
-      <Dialog open={shortcutsOpen} onOpenChange={setShortcutsOpen}>
-        <DialogContent className="sm:max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Keyboard shortcuts</DialogTitle>
-            <DialogDescription>Search for one, or hold a key to see what it does.</DialogDescription>
-          </DialogHeader>
-          {/* Arc's cheatsheet: searchable, grouped, keys drawn for this person's
-              platform. The list scrolls inside the dialog on a short screen. */}
-          <div className="-mx-1 max-h-[min(60vh,28rem)] overflow-y-auto px-1 pt-1">
-            <ShortcutList groups={KEYBOARD_SHORTCUTS} />
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ResponsiveDialog
+        open={shortcutsOpen}
+        onOpenChange={setShortcutsOpen}
+        title="Keyboard shortcuts"
+        description="Search for one, or hold a key to see what it does."
+        className="sm:max-w-xl"
+      >
+        {/* Arc's cheatsheet: searchable, grouped, keys drawn for this person's
+            platform. On a desktop the list scrolls inside the dialog on a short screen. */}
+        <div className="md:-mx-1 md:max-h-[min(60vh,28rem)] md:overflow-y-auto md:px-1">
+          <ShortcutList groups={KEYBOARD_SHORTCUTS} />
+        </div>
+      </ResponsiveDialog>
 
       {eventPopupNotification && (
         <LiveEventDetectedPopup
