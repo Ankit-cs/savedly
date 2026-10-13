@@ -868,7 +868,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
                 onClick={openCaptureModal}
                 data-tour="quick-capture-btn"
                 title={memoryLimit.isAtLimit ? memoryLimit.message ?? undefined : undefined}
-                className="relative w-full h-10 rounded-full font-semibold text-[13px] bg-primary text-white flex items-center justify-center gap-1.5 shadow-sm"
+                className="relative w-full h-10 rounded-full font-semibold text-[13px] bg-primary text-primary-foreground flex items-center justify-center gap-1.5 shadow-sm"
               >
                 <HugeiconsIcon icon={Plus} strokeWidth={2.25} className="h-4 w-4" /> Quick Capture
                 {memoryLimit.isAtLimit && <LimitDot />}
@@ -892,7 +892,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
                   });
                 }}
                 title={memoryLimit.isAtLimit ? memoryLimit.message ?? undefined : undefined}
-                className="relative h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center shadow-sm shrink-0"
+                className="relative h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-sm shrink-0"
                 aria-label="Quick Capture (Ctrl+Q)"
               >
                 <HugeiconsIcon icon={Plus} strokeWidth={2.25} className="h-4 w-4" />
@@ -1133,7 +1133,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
           <button
             onClick={openCaptureModal}
             title={memoryLimit.isAtLimit ? memoryLimit.message ?? undefined : undefined}
-            className="relative h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center shadow-lg -translate-y-2 select-none"
+            className="relative h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg -translate-y-2 select-none"
           >
             <HugeiconsIcon icon={Plus} strokeWidth={2.25} className="h-6 w-6 stroke-[2.5]" />
             {memoryLimit.isAtLimit && <LimitDot />}
@@ -1394,7 +1394,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
               type="button"
               onClick={openCaptureModal}
               title={memoryLimit.isAtLimit ? memoryLimit.message ?? undefined : undefined}
-              className="relative h-10 w-10 rounded-full bg-primary text-white shadow-sm flex items-center justify-center hover:opacity-90 transition-opacity shrink-0"
+              className="relative h-10 w-10 rounded-full bg-primary text-primary-foreground shadow-sm flex items-center justify-center hover:opacity-90 transition-opacity shrink-0"
               aria-label="Quick Capture (Ctrl+Q)"
             >
               <HugeiconsIcon icon={Plus} strokeWidth={2.25} className="h-4 w-4" />

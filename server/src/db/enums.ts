@@ -30,11 +30,17 @@ export enum SettingsTheme {
   DARK = "dark",
 }
 
+// The accent a person can pick for the app (Settings > Appearance). The
+// colours themselves are in client/app/globals.css.
 export enum AccentColor {
   BLUE = "blue",
   PURPLE = "purple",
   GREEN = "green",
   ORANGE = "orange",
+  INDIGO = "indigo",
+  TEAL = "teal",
+  PINK = "pink",
+  GRAPHITE = "graphite",
 }
 
 export enum MemoryType {

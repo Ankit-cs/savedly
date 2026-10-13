@@ -75,6 +75,10 @@ export const accentColorEnum = pgEnum("accent_color", [
   AccentColor.PURPLE,
   AccentColor.GREEN,
   AccentColor.ORANGE,
+  AccentColor.INDIGO,
+  AccentColor.TEAL,
+  AccentColor.PINK,
+  AccentColor.GRAPHITE,
 ]);
 
 export const organizeModeEnum = pgEnum("organize_mode", [
