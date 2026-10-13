@@ -38,7 +38,6 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
-import { ResizablePanel, ResizablePanels } from "@/components/arc/resizable-panels/resizable-panels";
 import { CommandPalette, type CommandItem as PaletteItem } from "@/components/arc/command-palette/command-palette";
 import { Textarea as ArcTextarea } from "@/components/arc/textarea/textarea";
 import { Input as ArcInput } from "@/components/arc/input/input";
@@ -484,36 +483,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
     });
   };
 
-  // The sidebar's width belongs to the resizable panels, which have no
-  // "close" or "open" to call. Pressing Enter on their divider is how a
-  // keyboard closes or reopens the sidebar pane, so that is what the app
-  // does too, when the phase above reaches the step where the sidebar moves.
-  const panelsRef = useRef<HTMLDivElement>(null);
   const paletteRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (sidebarPhase !== "hiding" && sidebarPhase !== "showing") return;
-    const divider = panelsRef.current?.querySelector<HTMLElement>('[role="separator"]');
-    if (!divider) return;
-    const closed = divider.hasAttribute("data-collapsed");
-    if ((sidebarPhase === "hiding") === closed) {
-      // Already where it should be (it was dragged there): carry on.
-      setSidebarPhase(sidebarPhase === "hiding" ? "collapsed" : "toDock");
-      return;
-    }
-    divider.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-  }, [sidebarPhase]);
-
-  // Called when the panes settle, whether the app moved them or a drag did.
-  const onPanelsChange = useCallback((sizes: number[]) => {
-    const closed = (sizes[0] ?? 0) < 0.5;
-    setSidebarPhase((phase) => {
-      if (closed) return phase === "collapsed" ? phase : "collapsed";
-      // Reopened: by the app ("showing"), or dragged back out of the edge.
-      if (phase === "showing" || phase === "collapsed") return "toDock";
-      return phase;
-    });
-  }, []);
-
   // The single source of truth for "what kind of memory is this" — rule-based
   // for now, but isolated in lib/detect-memory-type.ts so it's a one-place
   // swap for a real AI classifier later.
@@ -861,21 +831,24 @@ function AppShell({ children }: { children: React.ReactNode }) {
         <div className="absolute -bottom-48 -right-24 h-[30rem] w-[30rem] rounded-full bg-primary/[0.07] blur-[130px] animate-ambient-flash [animation-delay:-9s]" />
       </div>
 
-      {/* 1. DESKTOP SIDEBAR and 2. the workspace, as two panes with a divider
-          between them that can be dragged to trade space (Arc's resizable
-          panels). Dragging the sidebar well past its minimum closes it. On a
-          phone the sidebar pane and the divider are not shown, and the
-          workspace is the only pane. Arc's own "restore" tab on a closed
-          divider is hidden: the floating dock and the topbar button do that
-          job here, and its click strip is narrowed to the screen's edge. */}
-      <div
-        ref={panelsRef}
-        className="relative z-10 flex min-w-0 flex-1 max-md:[&_[role=separator]]:hidden [&_[role=separator]_[data-side]]:!hidden [&_[role=separator][data-collapsed]]:before:!right-[-8px]"
+      {/* 1. DESKTOP SIDEBAR */}
+      <motion.aside
+        initial={false}
+        animate={{ width: sidebarCollapsed ? 0 : 240 }}
+        transition={{ duration: 0.2, ease: "easeInOut" }}
+        onAnimationComplete={() => {
+          setSidebarPhase((phase) => {
+            if (phase === "hiding") return "collapsed";
+            if (phase === "showing") return "toDock";
+            return phase;
+          });
+        }}
+        className={cn(
+          "relative z-10 bg-muted/15 flex flex-col justify-between shrink-0 hidden md:flex overflow-hidden",
+          sidebarCollapsed ? "border-r-0" : "border-r border-border/60"
+        )}
       >
-      <ResizablePanels label="Savedly" onLayoutChange={onPanelsChange}>
-      <ResizablePanel id="app-sidebar" label="Sidebar" defaultSize={19} minSize={216} maxSize={380} collapsible className="bg-muted/15 max-md:!hidden">
-      <aside aria-label="Sidebar" className="flex min-h-0 flex-1 flex-col justify-between">
-        <div className="flex flex-col min-h-0 flex-1">
+        <div className="flex flex-col min-h-0 flex-1 w-60">
 
           {/* Header + Quick Capture — fixed, never scrolls with the nav below */}
           <div className="px-3 pt-5 pb-3 space-y-4 shrink-0">
@@ -1006,7 +979,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Sidebar Bottom user profile */}
-        <div className="relative border-t border-border/40 p-3">
+        <div className="relative w-60 border-t border-border/40 p-3">
           <button
             type="button"
             onClick={() => setUserDropdownOpen((open) => !open)}
@@ -1055,12 +1028,10 @@ function AppShell({ children }: { children: React.ReactNode }) {
           )}
         </div>
 
-      </aside>
-      </ResizablePanel>
+      </motion.aside>
 
       {/* 2. TOPBAR AND MAIN WORKSPACE */}
-      <ResizablePanel id="app-main" label="Page" defaultSize={81} minSize={360}>
-      <div className="flex-1 flex flex-col overflow-hidden relative min-h-0">
+      <div className="flex-1 flex flex-col overflow-hidden relative z-10">
 
         {/* Topbar Header */}
         <header className="h-16 border-b border-border/40 px-6 flex items-center justify-between shrink-0 hidden md:flex">
@@ -1253,9 +1224,6 @@ function AppShell({ children }: { children: React.ReactNode }) {
           </SheetContent>
         </Sheet>
 
-      </div>
-      </ResizablePanel>
-      </ResizablePanels>
       </div>
 
       {/* GLOBAL QUICK CAPTURE MODAL. A dialog on a desktop and a bottom
