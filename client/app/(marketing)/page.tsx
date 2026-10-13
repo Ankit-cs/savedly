@@ -3,6 +3,7 @@ import { HeroSwitcher } from "@/components/marketing/landing/hero-switcher";
 import { StepsSection } from "@/components/marketing/landing/steps-section";
 import { FeatureBlocks } from "@/components/marketing/landing/feature-blocks";
 import { OpenSection } from "@/components/marketing/landing/open-section";
+import { MoreSection } from "@/components/marketing/landing/more-section";
 import { ImportSection } from "@/components/marketing/landing/import-section";
 import { PrivacySection } from "@/components/marketing/landing/privacy-section";
 import { PricingStrip } from "@/components/marketing/landing/pricing-strip";
@@ -43,6 +44,7 @@ export default function MarketingPage() {
       <HeroSwitcher />
       <StepsSection />
       <FeatureBlocks />
+      <MoreSection />
       <ImportSection />
       <PrivacySection />
       <OpenSection />

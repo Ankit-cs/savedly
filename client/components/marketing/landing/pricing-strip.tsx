@@ -40,10 +40,7 @@ const TIER_ICON: Record<string, { icon: IconSvgElement; tint: string }> = {
 };
 
 /** What every plan has, the Free card's list. From the pricing page's own "essentials". */
-const ESSENTIALS = ["Search by meaning", "Ask your library", "Collections and tags", "Export any time"];
-
-/** At most this many feature lines on a card, so the three stay the same height. */
-const MAX_FEATURES = 4;
+const ESSENTIALS = ["Search by meaning", "Ask your library", "Collections and tags", "Sharing by link", "Import and export"];
 
 interface Card {
   plan: PublicPlan;
@@ -62,7 +59,9 @@ function cards(plans: PublicPlan[] | undefined): Card[] {
       plan,
       tier: planTier(plan.key),
       buildsOn: below ? `Everything in ${below.name} +` : null,
-      features: below ? planFeatureBullets(plan.features, below.features).slice(0, MAX_FEATURES) : ESSENTIALS,
+      // Every feature the plan adds, none left out. The first card lists what
+      // every plan has, then whatever the plan itself switches on.
+      features: below ? planFeatureBullets(plan.features, below.features) : [...ESSENTIALS, ...planFeatureBullets(plan.features)],
     };
   });
 }
