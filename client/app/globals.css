@@ -193,6 +193,35 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* One scrollbar everywhere: the thin, rounded, border-coloured thumb of
+     shadcn's ScrollArea (components/ui/scroll-area.tsx), on every element
+     that scrolls natively: pages, dialogs, sheets, lists, text boxes, and the
+     Arc components. It is styling of the real scrollbar, not a swap to the
+     ScrollArea component, so sticky headers, scroll positions and infinite
+     lists keep working exactly as they did. It sits in the base layer, so a
+     place that hides its scrollbar on purpose still wins. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-track,
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-muted-foreground);
+  }
 }
 
 /* Diagonal light sweep for "AI is working on this" states — e.g. a
