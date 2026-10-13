@@ -1553,6 +1553,8 @@ function AppShell({ children }: { children: React.ReactNode }) {
         <DialogContent
           ref={paletteRef}
           showCloseButton={false}
+          // The palette draws its own panel and belongs at the top, by the keyboard's reach.
+          mobileSheet={false}
           className="top-[12vh] translate-y-0 gap-0 bg-transparent p-0 shadow-none ring-0 sm:max-w-xl [&_[role=combobox]~kbd]:!hidden"
         >
           <DialogTitle className="sr-only">Search and commands</DialogTitle>
