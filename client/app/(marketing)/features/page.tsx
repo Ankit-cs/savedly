@@ -57,7 +57,11 @@ export default function FeaturesPage() {
                 <br className="hidden sm:block" /> Savedly does
               </h1>
               <p className="max-w-xl text-lg leading-relaxed text-pretty text-muted-foreground lg:justify-self-end">
-                Save anything, and find it again from whatever you remember about it. Each part below is shown working, with the same examples all the way down.
+                Save anything, and find it again from whatever you remember about it. Each part below is shown working, with the same examples all the way down. For what happens behind it, see{" "}
+                <Link href="/how-it-works" className="font-medium text-foreground underline decoration-foreground/25 underline-offset-4 hover:decoration-foreground">
+                  how it works
+                </Link>
+                .
               </p>
             </div>
 
