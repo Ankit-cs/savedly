@@ -15,12 +15,18 @@ import {
   GithubIcon as Github,
   Coffee01Icon as Coffee,
   ArrowUpRight01Icon as ArrowUpRight,
+  DiscordIcon as Discord,
+  Mail01Icon as Mail,
 } from "@hugeicons/core-free-icons";
-import { Logo, LogoMark } from "@/components/logo";
+import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
 import { BOOKING_URL } from "@/lib/booking";
 import { GITHUB_CONFIGURED, GITHUB_URL, LICENSE } from "@/lib/open-source";
 import { ProductHuntBadge } from "@/components/marketing/product-hunt-badge";
+import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/contact";
+
+/** The community server, the same invite the Community page links to. */
+const DISCORD_URL = "https://discord.gg/PzGFcMNyRK";
 
 // Structure adapted from a pasted "Footer12" reference — kept: the
 // asymmetric two-column grid (a lead block beside 4 link columns), the
@@ -61,9 +67,9 @@ const sections: { title: string; links: FooterLink[] }[] = [
     links: [
       { label: "Features", href: "/features" },
       { label: "Pricing", href: "/pricing" },
+      { label: "Integrations", href: "/#integrations" },
       { label: "Changelog", href: "/changelog" },
-      { label: "GitHub", href: GITHUB_URL, external: true },
-      { label: "Report a bug", href: "/report" },
+      { label: "Self-hosting", href: "/help/docs/self-host/self-host" },
     ],
   },
   {
@@ -81,6 +87,7 @@ const sections: { title: string; links: FooterLink[] }[] = [
       { label: "Blog", href: "/blog" },
       { label: "Help Center", href: "/help" },
       { label: "Community", href: "/community" },
+      { label: "Report a bug", href: "/report" },
     ],
   },
   {
@@ -89,6 +96,7 @@ const sections: { title: string; links: FooterLink[] }[] = [
       { label: "About", href: "/about" },
       { label: "Contact", href: "/contact" },
       { label: "Contribute", href: "/contribute" },
+      { label: "GitHub", href: GITHUB_URL, external: true },
     ],
   },
   {
@@ -122,10 +130,11 @@ const linkClass =
   "text-[15px] text-muted-foreground transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:outline-none focus-visible:underline underline-offset-4";
 
 /**
- * A rounded panel inset from the page edges, the same shape language as the
- * landing page's panels and blue CTA block, so the page ends on a surface
- * rather than a hairline. Everything linked here exists; nothing is
- * decorative (no newsletter or social icons, since neither exists).
+ * A full-width band that closes the page: the brand and the ways to reach us
+ * beside five columns of links, a bottom bar, then the wordmark stretched
+ * from edge to edge and running off the bottom. Everything linked here
+ * exists; nothing is decorative (no newsletter, no social accounts that
+ * don't exist).
  */
 export function MainFooter() {
   return SELF_HOSTED ? <PlainFooter /> : <MarketingFooter />;
@@ -141,60 +150,54 @@ function MarketingFooter() {
   useEffect(() => setMounted(true), []);
   const current = mounted ? (theme ?? "system") : null;
 
+  const pill = "inline-flex h-9 items-center gap-2 rounded-full px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50";
+
   return (
-    <footer className="w-full overflow-hidden bg-background px-5 pb-5 font-sans text-foreground antialiased sm:px-6 sm:pb-6">
+    <footer className="w-full overflow-hidden border-t border-foreground/10 bg-muted/50 font-sans text-foreground antialiased">
       <motion.div
         variants={footerContainer}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
-        className="relative mx-auto w-full max-w-6xl overflow-hidden rounded-[2rem] bg-foreground/[0.035] px-6 pt-12 pb-8 ring-1 ring-foreground/8 sm:px-10 sm:pt-16 lg:px-14"
+        viewport={{ once: true, amount: 0.15 }}
+        className="mx-auto w-full max-w-6xl px-5 pt-16 sm:px-8 md:pt-20"
       >
-        <div className="grid gap-12 lg:grid-cols-[minmax(260px,360px)_1fr] lg:gap-20">
+        <div className="grid gap-14 lg:grid-cols-[minmax(280px,380px)_1fr] lg:gap-24">
           <motion.div variants={riseItem} className="max-w-sm">
             <Link href="/" className="inline-flex items-center rounded-lg transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
-              <Logo className="text-xl text-foreground" />
+              <Logo className="text-2xl text-foreground" />
             </Link>
-            <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground">
+            <p className="mt-5 text-base leading-relaxed text-muted-foreground">
               Save anything. Ask it anything. A personal library that reads what you save and finds it again when you need it.
             </p>
+
+            <a href={SUPPORT_MAILTO} className="mt-5 inline-flex items-center gap-2 text-[15px] font-medium text-foreground underline decoration-foreground/25 underline-offset-4 transition-colors hover:decoration-foreground">
+              <HugeiconsIcon icon={Mail} strokeWidth={2} className="h-4 w-4 text-muted-foreground" />
+              {SUPPORT_EMAIL}
+            </a>
+
             <div className="mt-6 flex flex-wrap gap-2">
               {GITHUB_CONFIGURED && (
-                <a
-                  href={GITHUB_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex h-9 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-medium text-background transition-opacity hover:opacity-90"
-                >
+                <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className={cn(pill, "bg-foreground text-background hover:bg-foreground/85")}>
                   <HugeiconsIcon icon={Github} strokeWidth={2} className="h-4 w-4" />
                   GitHub
                 </a>
               )}
-              <a
-                href={BOOKING_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-9 items-center gap-2 rounded-full px-4 text-sm font-medium text-foreground ring-1 ring-foreground/15 transition-colors hover:bg-foreground/5"
-              >
+              <a href={DISCORD_URL} target="_blank" rel="noopener noreferrer" className={cn(pill, "text-foreground ring-1 ring-foreground/15 hover:bg-foreground/5")}>
+                <HugeiconsIcon icon={Discord} strokeWidth={2} className="h-4 w-4" />
+                Discord
+              </a>
+              <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className={cn(pill, "text-foreground ring-1 ring-foreground/15 hover:bg-foreground/5")}>
                 <HugeiconsIcon icon={Calendar} strokeWidth={2} className="h-4 w-4" />
                 Book a call
               </a>
-              <Link
-                href="/contribute"
-                className="inline-flex h-9 items-center gap-2 rounded-full px-4 text-sm font-medium text-foreground ring-1 ring-foreground/15 transition-colors hover:bg-foreground/5"
-              >
-                <HugeiconsIcon icon={Coffee} strokeWidth={2} className="h-4 w-4" />
-                Support the project
-              </Link>
             </div>
-            <ProductHuntBadge variant="review" height={40} className="mt-5" />
           </motion.div>
 
-          <motion.nav variants={footerContainer} aria-label="Footer" className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-3 md:grid-cols-5">
+          <motion.nav variants={footerContainer} aria-label="Footer" className="grid grid-cols-2 gap-x-8 gap-y-12 sm:grid-cols-3 md:grid-cols-5">
             {sections.map((section) => (
               <motion.div key={section.title} variants={riseItem}>
                 <h3 className="text-sm font-medium text-foreground">{section.title}</h3>
-                <ul className="mt-4 space-y-3">
+                <ul className="mt-5 space-y-3.5">
                   {section.links.map((link) => (
                     <li key={link.label}>
                       {link.external ? (
@@ -215,20 +218,24 @@ function MarketingFooter() {
           </motion.nav>
         </div>
 
-        {/* The mark and wordmark as one large sign-off, auto-fit to the
-            panel's width via textLength so the long name never wraps. */}
-        <motion.div variants={riseItem} className="pointer-events-none mt-16 flex items-end gap-[2.5%] select-none" aria-hidden>
-          <LogoMark className="h-auto w-[11%] shrink-0 opacity-90" />
-          <svg className="h-auto min-w-0 flex-1" viewBox="0 0 1000 150" preserveAspectRatio="xMinYMax meet">
-            <text x="0" y="128" textLength="1000" lengthAdjust="spacingAndGlyphs" fontSize="160" className="fill-foreground/[0.09] font-sans font-semibold tracking-tight">
-              savedly
-            </text>
-          </svg>
+        {/* One line for what the project asks of a visitor, kept apart from the links. */}
+        <motion.div variants={riseItem} className="mt-16 flex flex-col gap-5 border-t border-foreground/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-base font-medium text-foreground">Free and open source, built in public.</p>
+            <p className="mt-1 text-sm text-muted-foreground">If it&apos;s useful to you, a review or a coffee keeps it going.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <ProductHuntBadge variant="review" height={40} />
+            <Link href="/contribute" className={cn(pill, "h-10 text-foreground ring-1 ring-foreground/15 hover:bg-foreground/5")}>
+              <HugeiconsIcon icon={Coffee} strokeWidth={2} className="h-4 w-4" />
+              Support the project
+            </Link>
+          </div>
         </motion.div>
 
-        <motion.div variants={riseItem} className="mt-10 flex flex-col gap-5 border-t border-foreground/10 pt-6 md:flex-row md:items-center md:justify-between">
+        <motion.div variants={riseItem} className="mt-8 flex flex-col gap-5 border-t border-foreground/10 py-6 md:flex-row md:items-center md:justify-between">
           <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} Savedly · Free and open source under the {LICENSE} license · Made in Bengaluru
+            &copy; {new Date().getFullYear()} Savedly · {LICENSE} license · Made in Bengaluru
           </p>
 
           <div role="radiogroup" aria-label="Theme" className="flex h-9 w-fit items-center rounded-full bg-foreground/[0.06] p-1">
@@ -254,6 +261,17 @@ function MarketingFooter() {
           </div>
         </motion.div>
       </motion.div>
+
+      {/* The name as the last thing on the page: stretched to the full width
+          of the window (textLength), with its lower part cut off by the
+          page's edge. */}
+      <div className="pointer-events-none -mb-[5.5%] mt-4 w-full select-none" aria-hidden>
+        <svg className="block h-auto w-full" viewBox="0 0 1000 205" preserveAspectRatio="xMidYMax meet">
+          <text x="6" y="168" textLength="988" lengthAdjust="spacingAndGlyphs" fontSize="232" className="fill-foreground/[0.07] font-sans font-semibold">
+            savedly
+          </text>
+        </svg>
+      </div>
     </footer>
   );
 }
