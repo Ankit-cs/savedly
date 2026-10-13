@@ -79,7 +79,7 @@ export default function AppearanceSettingsPage() {
                 </button>
               ))}
             </div>
-            <p className="text-[10px] font-normal text-muted-foreground">Changes buttons, links and highlights in the app, for your account. The logo and the public website stay blue.</p>
+            <p className="text-[10px] font-normal text-muted-foreground">Changes buttons, links and highlights in the app, for your account. The logo, the public website and the admin area stay blue.</p>
           </div>
         )}
 

@@ -12,9 +12,9 @@ function apply(accent: AccentId | null) {
 
 /**
  * Applies the signed-in person's accent colour (Settings > Appearance) to
- * the app. Rendered by the app and admin layouts only, and it takes the
- * colour off again when they unmount, so the public website is always the
- * brand blue. Draws nothing.
+ * the app. Rendered by the app layout only, and it takes the colour off
+ * again when that unmounts, so the public website and the admin area are
+ * always the brand blue. Draws nothing.
  */
 export function AccentColor() {
   const { data: settings } = useSettingsQuery();
