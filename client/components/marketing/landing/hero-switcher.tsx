@@ -89,7 +89,8 @@ function usePinned(): boolean {
   const reduce = useReducedMotion();
   const [wide, setWide] = useState(false);
   useEffect(() => {
-    const query = window.matchMedia("(min-width: 1024px) and (min-height: 640px)");
+    // A phone pins too, when it is tall enough to hold the words and the picture at once.
+    const query = window.matchMedia("(min-width: 1024px) and (min-height: 640px), (max-width: 1023px) and (min-height: 600px)");
     const update = () => setWide(query.matches);
     update();
     query.addEventListener("change", update);
@@ -190,13 +191,14 @@ function Switcher() {
   const Scene = tab.Scene;
 
   return (
-    <div ref={track} className={cn("relative mt-14 md:mt-20", pinned && "h-[480vh]")}>
-      <div className={cn(pinned ? "sticky top-0 h-screen" : "mx-auto w-full max-w-[1240px] px-3 sm:px-5")}>
+    <div ref={track} className={cn("relative mt-14 md:mt-20", pinned && "h-[300svh] lg:h-[480vh]")}>
+      <div className={cn(pinned ? "sticky top-0 h-svh" : "mx-auto w-full max-w-[1240px] px-3 sm:px-5")}>
         <motion.div
           style={pinned ? { top, bottom, left: side, right: side, borderRadius: radius } : undefined}
           className={cn(
-            "flex flex-col items-center justify-center overflow-hidden px-3 py-8 sm:px-8 sm:py-12",
-            pinned ? "absolute" : "relative rounded-[1.75rem] sm:rounded-[2.25rem]",
+            "flex flex-col items-center justify-center overflow-hidden px-3 sm:px-8 sm:py-12",
+            // Pinned on a phone: room at the top for the navigation bar that floats over the panel.
+            pinned ? "absolute pb-4 pt-[4.25rem] lg:py-12" : "relative rounded-[1.75rem] py-8 sm:rounded-[2.25rem]",
           )}
         >
           <Backdrop tones={tab.tones} />
@@ -210,13 +212,13 @@ function Switcher() {
               // Appears as the panel grows, and can't be tabbed to or clicked before then.
               style={{ opacity: grow, pointerEvents: skipClickable }}
               // Below the navigation bar: its strip spans the full width and would take the click.
-              className="absolute right-6 top-[5.5rem] z-20 flex h-11 w-11 items-center justify-center rounded-xl bg-card/60 text-foreground/70 ring-1 ring-foreground/10 backdrop-blur transition-colors hover:bg-card hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+              className="absolute right-3 top-[4.5rem] z-20 flex h-9 w-9 items-center lg:right-6 lg:top-[5.5rem] lg:h-11 lg:w-11 justify-center rounded-xl bg-card/60 text-foreground/70 ring-1 ring-foreground/10 backdrop-blur transition-colors hover:bg-card hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
             >
               <HugeiconsIcon icon={CloseIcon} strokeWidth={2} className="h-5 w-5" />
             </motion.button>
           )}
 
-          <div role="tablist" aria-label="What Savedly does" className="relative z-10 flex gap-2">
+          <div role="tablist" aria-label="What Savedly does" className={cn("relative z-10 flex gap-2", pinned && "max-lg:self-start")}>
             {TABS.map((t, i) => {
               const selected = i === active;
               return (
@@ -228,7 +230,7 @@ function Switcher() {
                   aria-controls="hero-scene"
                   onClick={() => choose(i)}
                   className={cn(
-                    "group flex h-11 items-center gap-2 rounded-2xl px-3 text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60",
+                    "group flex h-10 items-center gap-2 rounded-2xl px-3 text-sm font-medium lg:h-11 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60",
                     selected
                       ? "bg-card text-foreground shadow-md ring-1 ring-foreground/[0.06]"
                       : "bg-card/55 text-muted-foreground hover:bg-card/85 hover:text-foreground",
@@ -244,7 +246,7 @@ function Switcher() {
           <div
             id="hero-scene"
             role="tabpanel"
-            className="relative z-10 mt-5 grid w-full max-w-6xl items-center gap-6 rounded-[1.5rem] bg-card/95 p-5 shadow-xl shadow-primary/10 ring-1 ring-foreground/[0.05] backdrop-blur sm:p-8 md:grid-cols-[1fr_1.15fr] md:gap-12 md:p-10 lg:p-12"
+            className="relative z-10 mt-3 grid w-full max-w-6xl items-center gap-4 rounded-[1.5rem] bg-card/95 p-4 shadow-xl sm:mt-5 sm:gap-6 sm:p-5 shadow-primary/10 ring-1 ring-foreground/[0.05] backdrop-blur sm:p-8 md:grid-cols-[1fr_1.15fr] md:gap-12 md:p-10 lg:p-12"
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
@@ -258,13 +260,13 @@ function Switcher() {
                   <HugeiconsIcon icon={tab.icon} strokeWidth={2} className="h-4 w-4" />
                   {tab.label}
                 </p>
-                <h2 className="mt-3 text-[1.75rem] font-medium leading-[1.1] tracking-[-0.03em] text-balance text-foreground sm:text-4xl lg:text-[2.75rem]">
+                <h2 className="mt-2 text-[1.5rem] font-medium leading-[1.1] tracking-[-0.03em] text-balance text-foreground sm:mt-3 sm:text-4xl lg:text-[2.75rem]">
                   {tab.title}
                 </h2>
-                <p className="mt-4 max-w-md text-[15px] leading-relaxed text-pretty text-muted-foreground">{tab.body}</p>
+                <p className="mt-2.5 max-w-md text-[14px] leading-relaxed text-pretty text-muted-foreground sm:mt-4 sm:text-[15px]">{tab.body}</p>
                 <Link
                   href={tab.href}
-                  className="group mt-6 inline-flex items-center gap-1.5 border-b border-foreground/25 pb-1 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
+                  className="group mt-6 hidden items-center gap-1.5 border-b border-foreground/25 pb-1 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary sm:inline-flex"
                 >
                   See how it works
                   <HugeiconsIcon icon={ArrowRightIcon} strokeWidth={2} className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -272,7 +274,7 @@ function Switcher() {
               </motion.div>
             </AnimatePresence>
 
-            <div className="relative h-[270px] overflow-hidden rounded-2xl bg-muted/70 ring-1 ring-foreground/[0.04] sm:h-[310px] lg:h-[400px]">
+            <div className={cn("relative overflow-hidden rounded-2xl bg-muted/70 ring-1 ring-foreground/[0.04] sm:h-[310px] lg:h-[400px]", pinned ? "h-[min(270px,36svh)]" : "h-[270px]")}>
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={`scene-${tab.id}`}
@@ -299,10 +301,13 @@ function Switcher() {
 export function HeroSwitcher() {
   const cta = useAuthCta();
   const reduce = useReducedMotion();
+  // The starting state is the same whether or not motion is reduced: the
+  // server can't know the setting, and a different first render in the
+  // browser is a hydration error. Reduced motion skips the travel instead.
   const rise = (delay: number) => ({
-    initial: reduce ? false : ({ opacity: 0, y: 16 } as const),
+    initial: { opacity: 0, y: 16 } as const,
     animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.7, ease: EASE, delay },
+    transition: reduce ? { duration: 0 } : { duration: 0.7, ease: EASE, delay },
   });
 
   return (
@@ -318,7 +323,7 @@ export function HeroSwitcher() {
 
         <motion.h1
           {...rise(0.06)}
-          className="mt-8 text-[clamp(2.25rem,6vw,4.75rem)] font-medium leading-[1.04] tracking-[-0.04em] text-foreground"
+          className="mt-8 text-[clamp(2.1rem,6vw,4.75rem)] font-medium leading-[1.04] tracking-[-0.04em] text-balance text-foreground"
         >
           <span className="block">Save anything.</span>
           <span className="block">Find it when you need it.</span>
