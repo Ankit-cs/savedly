@@ -1,4 +1,7 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { useRef, useState, type ReactNode } from "react";
+import { motion, useMotionValueEvent, useScroll } from "motion/react";
 import Link from "next/link";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import {
@@ -20,14 +23,19 @@ import { cn } from "@/lib/utils";
 
 // Everything the product does that the sections above don't show. Each card
 // is a small piece of the real interface, drawn in markup with the demo
-// library's content, over a title and a plain description. Only what is in
+// library's content, beside a title and a plain description. Only what is in
 // the app today; a planned connector is drawn as planned, and anything tied
 // to a paid plan says so.
+//
+// On a wide screen the section holds still while the page scrolls and the
+// cards take turns: picture left and words right, then the reverse, each
+// sliding in from its own side. On a phone, or with reduced motion, the same
+// cards are simply stacked.
 
 /** The frame every picture sits in. */
 function Panel({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div aria-hidden className={cn("flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl bg-muted/70 p-6 ring-1 ring-foreground/[0.05]", className)}>
+    <div aria-hidden className={cn("flex aspect-[4/3] items-center justify-center overflow-hidden rounded-3xl bg-muted/70 p-6 ring-1 ring-foreground/[0.05]", className)}>
       {children}
     </div>
   );
@@ -256,45 +264,143 @@ const CARDS: { icon: IconSvgElement; title: string; body: string; picture: React
   },
 ];
 
-export function MoreSection() {
+const EASE = [0.16, 1, 0.3, 1] as const;
+/** How far the page scrolls for each card, in viewport heights. */
+const SCROLL_PER_CARD = 0.8;
+
+function Heading() {
   return (
-    <section id="everything" className="scroll-mt-24 bg-background px-5 py-20 font-sans antialiased sm:px-8 md:py-28">
-      <div className="mx-auto max-w-6xl">
-        <div className="grid gap-6 lg:grid-cols-[1fr_1fr] lg:items-end lg:gap-16">
-          <div>
-            <p className="flex items-center gap-2 text-sm font-medium text-primary">
-              <span className="h-2 w-2 rotate-45 rounded-[2px] bg-primary" aria-hidden />
-              Beyond search
-            </p>
-            <h2 className="mt-4 font-serif text-[clamp(2rem,4vw,3rem)] font-medium leading-[1.08] tracking-[-0.025em] text-balance text-foreground">
-              Everything else
-              <br className="hidden sm:block" /> it does
-            </h2>
-          </div>
-          <p className="max-w-xl text-lg leading-relaxed text-pretty text-muted-foreground lg:justify-self-end">
-            Search, Ask and filing are the heart of it. Around them is the rest of a place to keep things: sharing, a calendar, a vault, and the tools you already use.
-          </p>
+    <div className="grid gap-6 lg:grid-cols-[1fr_1fr] lg:items-end lg:gap-16">
+      <div>
+        <p className="flex items-center gap-2 text-sm font-medium text-primary">
+          <span className="h-2 w-2 rotate-45 rounded-[2px] bg-primary" aria-hidden />
+          Beyond search
+        </p>
+        <h2 className="mt-4 font-serif text-[clamp(2rem,4vw,3rem)] font-medium leading-[1.08] tracking-[-0.025em] text-balance text-foreground">
+          Everything else
+          <br className="hidden sm:block" /> it does
+        </h2>
+      </div>
+      <p className="max-w-xl text-lg leading-relaxed text-pretty text-muted-foreground lg:justify-self-end">
+        Search, Ask and filing are the heart of it. Around them is the rest of a place to keep things: sharing, a calendar, a vault, and the tools you already use.
+      </p>
+    </div>
+  );
+}
+
+const ALSO =
+  "Also: links, notes, images, PDFs, videos and voice memos all save the same way. Bulk actions on many memories at once (Lite and Pro). Self-host with one command and bring your own AI key from OpenAI, Anthropic, Gemini, Groq or OpenRouter, with backups and update notices in the admin area.";
+
+/** One card at a time, changing with the scroll. Wide screens with motion allowed. */
+function Stage() {
+  const track = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: track, offset: ["start start", "end end"] });
+  const [active, setActive] = useState(0);
+  useMotionValueEvent(scrollYProgress, "change", (progress) => {
+    setActive(Math.min(CARDS.length - 1, Math.max(0, Math.floor(progress * CARDS.length))));
+  });
+
+  return (
+    <div ref={track} style={{ height: `${100 + CARDS.length * SCROLL_PER_CARD * 100}vh` }}>
+      <div className="sticky top-0 flex h-screen flex-col justify-center overflow-hidden">
+        <div className="relative mx-auto h-[min(64vh,520px)] w-full max-w-6xl">
+          {CARDS.map((card, i) => {
+            const shown = i === active;
+            // Even cards: picture left, words right. Odd cards: the reverse.
+            const pictureLeft = i % 2 === 0;
+            // Each half arrives from, and leaves toward, its own outer edge.
+            const off = (side: "left" | "right") => (side === "left" ? -72 : 72);
+            return (
+              <article
+                key={card.title}
+                aria-hidden={!shown}
+                className={cn("absolute inset-0 grid grid-cols-2 items-center gap-16", !shown && "pointer-events-none")}
+              >
+                <motion.div
+                  className={cn(pictureLeft ? "order-1" : "order-2")}
+                  initial={false}
+                  animate={{ opacity: shown ? 1 : 0, x: shown ? 0 : off(pictureLeft ? "left" : "right"), scale: shown ? 1 : 0.97 }}
+                  transition={{ duration: 0.65, ease: EASE }}
+                >
+                  <Panel className="aspect-auto h-[min(64vh,520px)] p-10">
+                    <div className="flex w-full origin-center scale-[1.45] items-center justify-center">{card.picture}</div>
+                  </Panel>
+                </motion.div>
+
+                <motion.div
+                  className={cn("max-w-md", pictureLeft ? "order-2" : "order-1 justify-self-end")}
+                  initial={false}
+                  animate={{ opacity: shown ? 1 : 0, x: shown ? 0 : off(pictureLeft ? "right" : "left") }}
+                  transition={{ duration: 0.65, ease: EASE, delay: shown ? 0.08 : 0 }}
+                >
+                  <p className="font-mono text-xs tabular-nums text-muted-foreground">
+                    {String(i + 1).padStart(2, "0")} / {String(CARDS.length).padStart(2, "0")}
+                  </p>
+                  <HugeiconsIcon icon={card.icon} strokeWidth={1.75} className="mt-6 h-7 w-7 text-primary" />
+                  <h3 className="mt-4 font-serif text-[clamp(1.6rem,2.6vw,2.25rem)] font-medium leading-[1.12] tracking-[-0.02em] text-balance text-foreground">{card.title}</h3>
+                  <p className="mt-4 text-lg leading-relaxed text-pretty text-muted-foreground">{card.body}</p>
+                  <Link
+                    href={card.href}
+                    tabIndex={shown ? undefined : -1}
+                    className="mt-6 inline-flex border-b border-foreground/25 pb-0.5 text-sm font-medium text-foreground transition-colors hover:border-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                  >
+                    Read the guide
+                  </Link>
+                </motion.div>
+              </article>
+            );
+          })}
         </div>
 
-        <div className="mt-14 grid gap-x-5 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-          {CARDS.map((card) => (
-            <article key={card.title}>
-              <Panel>{card.picture}</Panel>
-              <h3 className="mt-5 flex items-start gap-2.5 px-1 text-base font-medium text-foreground">
-                <HugeiconsIcon icon={card.icon} strokeWidth={2} className="mt-0.5 h-[18px] w-[18px] shrink-0 text-muted-foreground" />
-                <Link href={card.href} className="underline decoration-transparent underline-offset-4 transition-colors hover:decoration-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
-                  {card.title}
-                </Link>
-              </h3>
-              <p className="mt-2.5 px-1 text-[15px] leading-relaxed text-muted-foreground">{card.body}</p>
-            </article>
+        {/* Where you are in the six. */}
+        <div className="mx-auto mt-10 flex w-full max-w-6xl gap-1.5" aria-hidden>
+          {CARDS.map((card, i) => (
+            <span key={card.title} className={cn("h-1 rounded-full transition-all duration-500", i === active ? "w-10 bg-foreground" : "w-4 bg-foreground/15")} />
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
 
-        <p className="mt-14 max-w-3xl border-t border-foreground/15 pt-6 text-sm leading-relaxed text-muted-foreground">
-          Also: links, notes, images, PDFs, videos and voice memos all save the same way. Bulk actions on many memories at once (Lite and Pro). Self-host with one command and bring your own AI key from OpenAI,
-          Anthropic, Gemini, Groq or OpenRouter, with backups and update notices in the admin area.
-        </p>
+/** The same cards, one under another. Phones and tablets, and anyone who asked for less motion. */
+function Stack() {
+  return (
+    <div className="mt-14 grid gap-x-5 gap-y-12 sm:grid-cols-2">
+      {CARDS.map((card) => (
+        <article key={card.title}>
+          <Panel>{card.picture}</Panel>
+          <h3 className="mt-5 flex items-start gap-2.5 px-1 text-base font-medium text-foreground">
+            <HugeiconsIcon icon={card.icon} strokeWidth={2} className="mt-0.5 h-[18px] w-[18px] shrink-0 text-muted-foreground" />
+            <Link href={card.href} className="underline decoration-transparent underline-offset-4 transition-colors hover:decoration-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
+              {card.title}
+            </Link>
+          </h3>
+          <p className="mt-2.5 px-1 text-[15px] leading-relaxed text-muted-foreground">{card.body}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+export function MoreSection() {
+  // Which layout shows is decided in CSS (screen width and the reduced-motion
+  // setting), not in JavaScript, so the server and the browser always agree.
+  return (
+    <section id="everything" className="scroll-mt-24 bg-background px-5 font-sans antialiased sm:px-8">
+      <div className="mx-auto max-w-6xl pt-20 md:pt-28">
+        <Heading />
+      </div>
+
+      <div className="hidden lg:block motion-reduce:lg:hidden">
+        <Stage />
+      </div>
+      <div className="mx-auto max-w-6xl lg:hidden motion-reduce:lg:block">
+        <Stack />
+      </div>
+
+      <div className="mx-auto max-w-6xl pb-20 md:pb-28">
+        <p className="mt-14 max-w-3xl border-t border-foreground/15 pt-6 text-sm leading-relaxed text-muted-foreground lg:mt-0">{ALSO}</p>
       </div>
     </section>
   );
