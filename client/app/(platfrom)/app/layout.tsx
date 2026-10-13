@@ -39,6 +39,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { GlidingHighlight } from "@/components/ui/gliding-highlight";
+import { AccentColor } from "@/components/accent-color";
 import { CommandPalette, type CommandItem as PaletteItem } from "@/components/arc/command-palette/command-palette";
 import { Textarea as ArcTextarea } from "@/components/arc/textarea/textarea";
 import { Input as ArcInput } from "@/components/arc/input/input";
@@ -826,6 +827,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
     <NextStepProvider>
       <NextStep steps={productTourSteps} navigationAdapter={useNextAdapter} cardComponent={TourCard}>
         <TourAutoStart userId={currentUser.id} />
+        <AccentColor />
         <div className="flex h-dvh w-screen bg-background text-foreground font-sans overflow-hidden transition-colors duration-300">
 
       {/* Ambient primary-color glow — decorative, sits behind everything else */}

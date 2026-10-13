@@ -246,6 +246,59 @@
   }
 }
 
+/* The brand blue, fixed. --primary starts as the same colour but can be
+   changed per person below; the logo uses this one so it never changes. */
+:root {
+  --brand: oklch(0.4878 0.2432 264.4045);
+}
+.dark {
+  --brand: oklch(0.6187 0.2067 259.2316);
+}
+
+/* Accent colours (Settings > Appearance). Blue is the default above; these
+   replace only the accent for someone who picked another colour, and only
+   while they are in the app: components/accent-color.tsx sets data-accent on
+   <html> there and removes it on the public website. Each is dark enough for
+   white text in the light theme and lifted in the dark theme, as blue is.
+   Arc's tokens (components/arc/foundation.css) are built from --primary, so
+   Arc components follow too. */
+:root[data-accent="purple"] {
+  --primary: oklch(0.5 0.25 300);
+  --ring: oklch(0.5 0.25 300);
+  --sidebar-primary: oklch(0.5 0.25 300);
+  --sidebar-ring: oklch(0.5 0.25 300);
+}
+.dark[data-accent="purple"] {
+  --primary: oklch(0.63 0.22 300);
+  --ring: oklch(0.46 0.15 300);
+  --sidebar-primary: oklch(0.63 0.22 300);
+  --sidebar-ring: oklch(0.63 0.22 300);
+}
+:root[data-accent="green"] {
+  --primary: oklch(0.5 0.12 165);
+  --ring: oklch(0.5 0.12 165);
+  --sidebar-primary: oklch(0.5 0.12 165);
+  --sidebar-ring: oklch(0.5 0.12 165);
+}
+.dark[data-accent="green"] {
+  --primary: oklch(0.62 0.14 163);
+  --ring: oklch(0.45 0.09 163);
+  --sidebar-primary: oklch(0.62 0.14 163);
+  --sidebar-ring: oklch(0.62 0.14 163);
+}
+:root[data-accent="orange"] {
+  --primary: oklch(0.55 0.19 40);
+  --ring: oklch(0.55 0.19 40);
+  --sidebar-primary: oklch(0.55 0.19 40);
+  --sidebar-ring: oklch(0.55 0.19 40);
+}
+.dark[data-accent="orange"] {
+  --primary: oklch(0.64 0.19 42);
+  --ring: oklch(0.47 0.12 42);
+  --sidebar-primary: oklch(0.64 0.19 42);
+  --sidebar-ring: oklch(0.64 0.19 42);
+}
+
 /* MessageScrollerViewport already references scrollbar-thin/
    scrollbar-gutter-stable, but nothing backed them — no scrollbar plugin is
    installed, so they were silently no-op classes and the chat fell back to

@@ -26,6 +26,7 @@ import {
 import type { IconSvgElement } from "@hugeicons/react";
 import { cn } from "@/lib/utils";
 import { GlidingHighlight } from "@/components/ui/gliding-highlight";
+import { AccentColor } from "@/components/accent-color";
 import { getServerConfig } from "@/lib/server-config";
 import { getSystemStatus } from "@/lib/admin-system";
 import { AiHealthBanner } from "@/components/admin/ai-health-banner";
@@ -169,6 +170,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen w-screen bg-background text-foreground font-sans overflow-hidden">
+      <AccentColor />
       {/* Distinct admin nav rail — uses the design system's dedicated
           sidebar tokens, unused elsewhere, so this reads as its own
           surface rather than a reskinned app sidebar. */}
