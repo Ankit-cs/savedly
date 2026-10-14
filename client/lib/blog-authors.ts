@@ -1,7 +1,8 @@
 // Who a blog post can be by. The editor (Admin > Blog) offers exactly these,
 // and the blog shows each one's picture beside the byline. A post stores the
 // name only, so renaming someone here means updating their posts too.
-// Pictures live in public/blog/authors (the team's is the logo).
+// Pictures live in public/blog/authors: 256px square crops of the photos in
+// public/authors (the team's is the logo).
 
 export interface BlogAuthor {
   name: string;
@@ -11,9 +12,8 @@ export interface BlogAuthor {
 
 export const BLOG_AUTHORS: BlogAuthor[] = [
   { name: "The Savedly team", avatar: "/logo.svg" },
-  { name: "Jyotishankar Patra", role: "Founder", avatar: "/blog/authors/jyotishankar-patra.jpg" },
-  // Initials until there's a photo.
-  { name: "Snehashree Dash", avatar: "/blog/authors/snehashree-dash.svg" },
+  { name: "Jyotishankar Patra", role: "Founder", avatar: "/blog/authors/jyotishankar-patra.webp" },
+  { name: "Snehashree Dash", avatar: "/blog/authors/snehashree-dash.webp" },
 ];
 
 export const DEFAULT_BLOG_AUTHOR = BLOG_AUTHORS[0].name;
