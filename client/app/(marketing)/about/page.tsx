@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "About · Savedly",
-  description: "Why Savedly exists, what it holds itself to, and how to help shape it. Open source, made in Bengaluru.",
+  description: "Why Savedly exists, what it holds itself to, and how to help shape it. Open source, made in Bhubaneswar.",
   alternates: { canonical: "/about" },
 };
 
@@ -155,7 +155,7 @@ export default function AboutPage() {
                 Built in the open.
                 <br /> Will you help shape it?
               </h2>
-              <p className="mx-auto mt-5 max-w-md text-[15px] leading-relaxed text-white/70">Savedly is new and made in Bengaluru. The browser extension is waiting on the Chrome Web Store; the rest is live.</p>
+              <p className="mx-auto mt-5 max-w-md text-[15px] leading-relaxed text-white/70">Savedly is new and made in Bhubaneswar. The browser extension is waiting on the Chrome Web Store; the rest is live.</p>
 
               <ul className="mx-auto mt-10 max-w-md space-y-1.5 text-left">
                 {WAYS_IN.map((way) => (

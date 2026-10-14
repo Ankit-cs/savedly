@@ -13,7 +13,7 @@ import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/contact";
 // for this repo's HugeiconsIcon convention; @/components/base-ui/badge
 // doesn't exist here (real path is @/components/ui/badge). Content is real
 // facts the previous /contact page already had — the support address,
-// Slack for Pro subscribers, Bengaluru — plus a real Cal.com link, not the
+// Slack for Pro subscribers, Bhubaneswar — plus a real Cal.com link, not the
 // phone-number fourth card the reference assumed (no phone number exists
 // anywhere in this codebase).
 interface ContactMethod {
@@ -49,7 +49,7 @@ const CONTACT_METHODS: ContactMethod[] = [
     icon: MapPin,
     title: "Based in",
     description: "Where the team actually works from.",
-    details: "Bengaluru, India",
+    details: "Bhubaneswar, India",
   },
 ];
 

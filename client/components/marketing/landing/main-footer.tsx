@@ -268,7 +268,7 @@ function MarketingFooter() {
         {/* Bottom bar */}
         <motion.div variants={riseItem} className="mt-16 flex flex-col gap-5 border-t border-foreground/10 py-7 md:flex-row md:items-center md:justify-between">
           <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} Savedly <span className="mx-1.5">·</span> {LICENSE} license <span className="mx-1.5">·</span> Made in Bengaluru
+            &copy; {new Date().getFullYear()} Savedly <span className="mx-1.5">·</span> {LICENSE} license <span className="mx-1.5">·</span> Made in Bhubaneswar
           </p>
 
           <div className="flex flex-wrap items-center gap-4">
