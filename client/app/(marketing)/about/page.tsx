@@ -24,7 +24,8 @@ export const metadata: Metadata = {
 // none are on record. The scattered pictures are the landing page's demo
 // library (public/landing/demo), invented link previews, not real sites.
 
-const PROSE = "font-serif text-[1.375rem] leading-[1.45] tracking-[-0.01em] text-foreground sm:text-[1.5rem]";
+// Headings are in the serif; everything else in the sans, as on the rest of the site.
+const PROSE = "text-lg leading-relaxed text-foreground sm:text-xl";
 const UNDERLINE = "underline decoration-foreground/30 decoration-1 underline-offset-[5px] transition-colors hover:decoration-foreground";
 
 /** Two overlapping saved items. `flip` mirrors which one sits in front. */
@@ -70,13 +71,13 @@ export default function AboutPage() {
             Saving is easy.
             <br /> Finding it again isn&apos;t.
           </h1>
-          <p className="mt-6 font-serif text-xl text-muted-foreground sm:text-2xl">Savedly is for the second part.</p>
+          <p className="mt-6 text-lg text-muted-foreground sm:text-xl">Savedly is for the second part.</p>
         </header>
 
         {/* What it is */}
         <section className="px-5 py-20 sm:px-8 md:py-28">
           <div className={cn("mx-auto max-w-[34rem] space-y-8 text-center text-pretty", PROSE)}>
-            <p>Savedly is a memory for what you find online.</p>
+            <p className="font-medium">Savedly is a memory for what you find online.</p>
             <p className="text-muted-foreground">
               Every link, note, screenshot and file you put in is read, summarised and filed for you. Later you describe it, or ask about it, and get it back, with the saved item there to check.
             </p>
@@ -123,16 +124,16 @@ export default function AboutPage() {
         <section className="px-5 py-24 sm:px-8 md:py-36">
           <div className={cn("mx-auto max-w-[34rem] space-y-8 text-center text-pretty", PROSE)}>
             <p>
-              What you save is yours. <span className="text-muted-foreground">Export all of it, any time, on every plan.</span>
+              <span className="font-medium">What you save is yours.</span> <span className="text-muted-foreground">Export all of it, any time, on every plan.</span>
             </p>
             <p>
-              Answers come with their sources. <span className="text-muted-foreground">Ask lists the saved items it used, and says so when it can&apos;t find one.</span>
+              <span className="font-medium">Answers come with their sources.</span> <span className="text-muted-foreground">Ask lists the saved items it used, and says so when it can&apos;t find one.</span>
             </p>
             <p>
-              Nothing changes behind your back. <span className="text-muted-foreground">Ask waits for your yes before it deletes or edits.</span>
+              <span className="font-medium">Nothing changes behind your back.</span> <span className="text-muted-foreground">Ask waits for your yes before it deletes or edits.</span>
             </p>
             <p>
-              And nothing rests on trust.{" "}
+              <span className="font-medium">And nothing rests on trust.</span>{" "}
               <span className="text-muted-foreground">
                 The code is{" "}
                 <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className={cn("text-foreground", UNDERLINE)}>
@@ -166,7 +167,7 @@ export default function AboutPage() {
                       className="group flex items-center justify-between gap-4 rounded-xl bg-white px-4 py-3 text-[14.5px] text-neutral-900 shadow-sm transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 dark:bg-white/[0.08] dark:text-white dark:ring-1 dark:ring-white/10 dark:backdrop-blur-md dark:hover:bg-white/[0.13]"
                     >
                       {way.label}
-                      <span className="shrink-0 rounded-full bg-neutral-100 px-2.5 py-1 font-mono text-[11px] text-neutral-600 transition-colors group-hover:bg-neutral-900 group-hover:text-white dark:bg-white/10 dark:text-white/70 dark:group-hover:bg-white dark:group-hover:text-neutral-900">
+                      <span className="shrink-0 rounded-full bg-neutral-100 px-2.5 py-1 text-[11.5px] font-medium text-neutral-600 transition-colors group-hover:bg-neutral-900 group-hover:text-white dark:bg-white/10 dark:text-white/70 dark:group-hover:bg-white dark:group-hover:text-neutral-900">
                         {way.action}
                       </span>
                     </a>
@@ -190,7 +191,7 @@ export default function AboutPage() {
                     <HugeiconsIcon icon={plan.icon} strokeWidth={1.75} className="h-5 w-5" />
                   </span>
                   <span>
-                    <span className="block font-serif text-lg leading-tight text-foreground">{plan.name}</span>
+                    <span className="block text-[15px] font-medium leading-tight text-foreground">{plan.name}</span>
                     <span className="block text-[13px] text-muted-foreground">{plan.what}</span>
                   </span>
                 </div>
