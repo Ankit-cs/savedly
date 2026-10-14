@@ -1,50 +1,61 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { GiftIcon as Gift, SparklesIcon as Sparkles, ServerStack01Icon as Server } from "@hugeicons/core-free-icons";
 import { Navbar } from "@/components/marketing/navbar";
 import MainFooter from "@/components/marketing/landing/main-footer";
-import { FinalCtaSection } from "@/components/marketing/landing/final-cta-section";
+import { LogoMark } from "@/components/logo";
 import { GITHUB_URL, LICENSE } from "@/lib/open-source";
 import { BOOKING_URL } from "@/lib/booking";
-import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/contact";
+import { SUPPORT_MAILTO } from "@/lib/contact";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "About · Savedly",
-  description: "Why Savedly exists, what it holds itself to, how it pays for itself, and who to talk to. Open source, made in Bengaluru.",
+  description: "Why Savedly exists, what it holds itself to, and how to help shape it. Open source, made in Bengaluru.",
   alternates: { canonical: "/about" },
 };
 
-// Why the product exists and what it holds itself to. Every claim here is
-// something the product does today (export, cited answers, Ask's
-// confirmation step, the AGPL code); the extension is still waiting for the
-// Chrome Web Store and is said to be. No numbers, customers or team size are
-// given, because none are on record.
+// An editorial page: a large serif line, short centred paragraphs, the kinds
+// of things people save scattered around one statement, then the ways to
+// get involved on a picture. Every claim is something the product does
+// today. No numbers, customers, team size or backers are given, because
+// none are on record. The scattered pictures are the landing page's demo
+// library (public/landing/demo), invented link previews, not real sites.
 
-const H2 = "font-serif text-[clamp(2rem,4vw,3rem)] font-medium leading-[1.08] tracking-[-0.025em] text-balance text-foreground";
-const LINK = "inline-flex border-b border-foreground/25 pb-0.5 text-sm font-medium text-foreground transition-colors hover:border-foreground";
+const PROSE = "font-serif text-[1.375rem] leading-[1.45] tracking-[-0.01em] text-foreground sm:text-[1.5rem]";
+const UNDERLINE = "underline decoration-foreground/30 decoration-1 underline-offset-[5px] transition-colors hover:decoration-foreground";
 
-const BELIEFS: { title: string; body: string }[] = [
-  {
-    title: "What you save is yours",
-    body: "Export a complete copy of everything, at any time, on every plan. Delete your account and it goes with it. A plan running out never locks you out of what you already saved.",
-  },
-  {
-    title: "Answers you can check",
-    body: "When Ask answers, it lists the saved items it used. If it can't find the answer in your library, it says so instead of making one up.",
-  },
-  {
-    title: "Nothing changes behind your back",
-    body: "Ask can organise your library for you, but before it deletes, edits several things at once, or touches your calendar, it says what it's about to do and waits for your yes.",
-  },
-  {
-    title: "Open, so nothing rests on trust",
-    body: `Every line of the code is public under ${LICENSE}. Read how it handles your data, or run your own copy on your own server, with every feature.`,
-  },
+/** Two overlapping saved items. `flip` mirrors which one sits in front. */
+function Pair({ back, front, flip, className }: { back: string; front: string; flip?: boolean; className?: string }) {
+  const tile = "absolute aspect-[40/21] w-[68%] overflow-hidden rounded-[18px] bg-muted shadow-xl shadow-black/10 ring-1 ring-foreground/10 sm:rounded-[22px]";
+  return (
+    <div aria-hidden className={cn("relative aspect-[16/11] w-full", className)}>
+      <div className={cn(tile, "top-0", flip ? "left-0 -rotate-2" : "right-0 rotate-2")}>
+        <Image src={`/landing/demo/${back}.webp`} alt="" fill sizes="(min-width: 1024px) 200px, 40vw" className="object-cover" />
+      </div>
+      <div className={cn(tile, "bottom-0", flip ? "right-0 rotate-1" : "left-0 -rotate-1")}>
+        <Image src={`/landing/demo/${front}.webp`} alt="" fill sizes="(min-width: 1024px) 200px, 40vw" className="object-cover" />
+      </div>
+    </div>
+  );
+}
+
+const WAYS_IN: { label: string; action: string; href: string; external?: boolean }[] = [
+  { label: "Read the code, or star it", action: "GitHub", href: GITHUB_URL, external: true },
+  { label: "Run your own copy", action: "Guide", href: "/help/docs/self-host/self-host" },
+  { label: "Report something broken", action: "Report", href: "/report" },
+  { label: "Suggest a feature", action: "Email", href: SUPPORT_MAILTO, external: true },
+  { label: "Talk it through, 30 minutes", action: "Book", href: BOOKING_URL, external: true },
+  { label: "Send a pull request", action: "Contribute", href: "/contribute" },
+  { label: "See what has shipped", action: "Changelog", href: "/changelog" },
 ];
 
-const PAID_BY: { name: string; what: string }[] = [
-  { name: "Free", what: "The hosted service, with room to save and ask every month. No card needed." },
-  { name: "Lite and Pro", what: "More room, more AI each month, and a few extras. These pay for the servers and the AI." },
-  { name: "Self-hosted", what: "Free, with every feature and no limits. You bring the server and the AI key." },
+const PAID_BY = [
+  { icon: Gift, name: "Free", what: "No card needed" },
+  { icon: Sparkles, name: "Lite and Pro", what: "Pay for the servers and AI" },
+  { icon: Server, name: "Self-hosted", what: "Free, every feature" },
 ];
 
 export default function AboutPage() {
@@ -53,136 +64,144 @@ export default function AboutPage() {
       <Navbar />
 
       <main className="flex-1">
-        <header className="px-5 pt-36 sm:px-8 md:pt-44">
-          <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1fr_1fr] lg:items-end lg:gap-16">
-            <h1 className="font-serif text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[1.04] tracking-[-0.03em] text-balance text-foreground">
-              Saving is easy.
-              <br className="hidden sm:block" /> Finding it again isn&apos;t.
-            </h1>
-            <p className="max-w-xl text-lg leading-relaxed text-pretty text-muted-foreground lg:justify-self-end">
-              Savedly is a memory for what you find online. Put in a link, a note, a screenshot or a file, and find it later by describing it, or ask about it in plain words.
-            </p>
-          </div>
+        {/* Hero */}
+        <header className="flex min-h-[72svh] flex-col items-center justify-center px-5 pt-28 text-center sm:px-8">
+          <h1 className="font-serif text-[clamp(2.75rem,7vw,5.25rem)] font-medium leading-[1.02] tracking-[-0.03em] text-balance text-foreground">
+            Saving is easy.
+            <br /> Finding it again isn&apos;t.
+          </h1>
+          <p className="mt-6 font-serif text-xl text-muted-foreground sm:text-2xl">Savedly is for the second part.</p>
         </header>
 
-        {/* 1. Why it exists */}
-        <section id="why" className="scroll-mt-24 px-5 py-20 sm:px-8 md:py-28">
-          <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.8fr_1fr] lg:gap-20">
-            <h2 className={H2}>Why it exists</h2>
-            <div className="max-w-2xl space-y-5 text-lg leading-relaxed text-pretty text-muted-foreground">
-              <p>
-                Most of us keep things the same way: a bookmark, a screenshot, a note to self, a tab left open for later. Each one felt worth keeping. Weeks on, it&apos;s somewhere in a folder you&apos;ll never open, under
-                a name you don&apos;t remember.
-              </p>
-              <p>
-                Bookmark managers ask you to file things as you save them, in folders and tags you have to keep up. Few people do, and the pile wins. The problem was never saving. It&apos;s that nothing reads what you
-                saved, so finding it depends on remembering exactly where it went.
-              </p>
-              <p className="text-foreground">
-                Savedly does the reading. Each thing you save is summarised, tagged and filed for you, so you can come back with a rough description, or a question, and get it back.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* 2. What it holds itself to */}
-        <section id="beliefs" className="scroll-mt-24 px-3 py-10 sm:px-5 md:py-16">
-          <div className="mx-auto max-w-[1400px] rounded-[2rem] bg-muted/60 px-5 py-16 sm:px-8 md:rounded-[2.5rem] md:py-24">
-            <div className="mx-auto max-w-6xl">
-              <h2 className={H2}>What it holds itself to</h2>
-              <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">Four things, each one something the product does today, not a promise about later.</p>
-
-              <div className="mt-12 grid gap-3 sm:grid-cols-2">
-                {BELIEFS.map((item, i) => (
-                  <div key={item.title} className="rounded-2xl bg-card p-6 ring-1 ring-foreground/[0.07] sm:p-7">
-                    <span className="font-mono text-[11px] text-muted-foreground">0{i + 1}</span>
-                    <h3 className="mt-3 text-lg font-medium tracking-[-0.01em] text-foreground">{item.title}</h3>
-                    <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">{item.body}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 3. How it pays for itself */}
-        <section id="paid-for" className="scroll-mt-24 px-5 py-20 sm:px-8 md:py-28">
-          <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.8fr_1fr] lg:gap-20">
-            <div className="max-w-md">
-              <h2 className={H2}>How it pays for itself</h2>
-              <p className="mt-5 text-lg leading-relaxed text-pretty text-muted-foreground">
-                By people who choose a paid plan on the hosted service. Not by advertising, and not by selling or training on what you save.
-              </p>
-              <Link href="/pricing" className={`mt-7 ${LINK}`}>
-                See the plans
+        {/* What it is */}
+        <section className="px-5 py-20 sm:px-8 md:py-28">
+          <div className={cn("mx-auto max-w-[34rem] space-y-8 text-center text-pretty", PROSE)}>
+            <p>Savedly is a memory for what you find online.</p>
+            <p className="text-muted-foreground">
+              Every link, note, screenshot and file you put in is read, summarised and filed for you. Later you describe it, or ask about it, and get it back, with the saved item there to check.
+            </p>
+            <p className="text-muted-foreground">
+              Bookmarks ask you to organise as you go. Few of us do, and the pile wins. We think the software should do the reading, and you should only have to{" "}
+              <Link href="/how-it-works" className={cn("text-foreground", UNDERLINE)}>
+                remember roughly what it was
               </Link>
+              .
+            </p>
+          </div>
+        </section>
+
+        {/* What people save, around one statement */}
+        <section className="px-5 py-16 sm:px-8 md:py-24">
+          <div className="relative mx-auto max-w-6xl">
+            <div className="mx-auto mb-12 grid max-w-md grid-cols-2 gap-6 lg:hidden">
+              <Pair back="calm" front="hnsw" />
+              <Pair back="lisbon" front="sourdough" flip />
             </div>
 
-            <dl className="border-t border-foreground/15">
-              {PAID_BY.map((item) => (
-                <div key={item.name} className="border-b border-foreground/15 py-6">
-                  <dt className="text-lg font-medium tracking-[-0.01em] text-foreground">{item.name}</dt>
-                  <dd className="mt-1.5 max-w-lg text-base leading-relaxed text-muted-foreground">{item.what}</dd>
+            <div className="hidden lg:block">
+              <Pair back="calm" front="hnsw" className="absolute top-0 left-0 w-[18rem]" />
+              <Pair back="lisbon" front="q3" flip className="absolute top-0 right-0 w-[18rem]" />
+              <Pair back="plaintext" front="nas" flip className="absolute bottom-0 left-[6%] w-[18rem]" />
+              <Pair back="sourdough" front="rag" className="absolute right-[6%] bottom-0 w-[18rem]" />
+            </div>
+
+            <div className="relative flex flex-col items-center text-center lg:py-56">
+              <LogoMark className="h-11 w-11" ticks={false} />
+              <p className="mt-7 max-w-[30rem] font-serif text-[clamp(1.75rem,3.4vw,2.5rem)] leading-[1.15] tracking-[-0.02em] text-balance text-foreground">
+                Videos, articles, notes, plans and screenshots. It reads them all.
+              </p>
+            </div>
+
+            <div className="mx-auto mt-12 grid max-w-md grid-cols-2 gap-6 lg:hidden">
+              <Pair back="plaintext" front="nas" flip />
+              <Pair back="q3" front="rag" />
+            </div>
+          </div>
+        </section>
+
+        {/* What it holds itself to */}
+        <section className="px-5 py-24 sm:px-8 md:py-36">
+          <div className={cn("mx-auto max-w-[34rem] space-y-8 text-center text-pretty", PROSE)}>
+            <p>
+              What you save is yours. <span className="text-muted-foreground">Export all of it, any time, on every plan.</span>
+            </p>
+            <p>
+              Answers come with their sources. <span className="text-muted-foreground">Ask lists the saved items it used, and says so when it can&apos;t find one.</span>
+            </p>
+            <p>
+              Nothing changes behind your back. <span className="text-muted-foreground">Ask waits for your yes before it deletes or edits.</span>
+            </p>
+            <p>
+              And nothing rests on trust.{" "}
+              <span className="text-muted-foreground">
+                The code is{" "}
+                <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className={cn("text-foreground", UNDERLINE)}>
+                  open, under {LICENSE}
+                </a>
+                .
+              </span>
+            </p>
+          </div>
+        </section>
+
+        {/* Ways in, on a picture */}
+        <section className="px-3 sm:px-5">
+          <div className="relative mx-auto max-w-[1400px] overflow-hidden rounded-[2rem] bg-[#070b14] px-5 py-20 sm:px-8 md:rounded-[2.75rem] md:py-28">
+            <Image src="/landing/hero-bg-dark.jpg" alt="" fill sizes="100vw" className="object-cover opacity-90" />
+            <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-[#070b14]/40 via-transparent to-[#1447E6]/25" />
+
+            <div className="relative mx-auto max-w-xl text-center">
+              <h2 className="font-serif text-[clamp(2.25rem,5vw,3.5rem)] leading-[1.05] tracking-[-0.025em] text-balance text-white">
+                Built in the open.
+                <br /> Will you help shape it?
+              </h2>
+              <p className="mx-auto mt-5 max-w-md text-[15px] leading-relaxed text-white/70">Savedly is new and made in Bengaluru. The browser extension is waiting on the Chrome Web Store; the rest is live.</p>
+
+              <ul className="mx-auto mt-10 max-w-md space-y-1.5 text-left">
+                {WAYS_IN.map((way) => (
+                  <li key={way.label}>
+                    <a
+                      href={way.href}
+                      {...(way.external && !way.href.startsWith("mailto:") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                      className="group flex items-center justify-between gap-4 rounded-xl bg-white px-4 py-3 text-[14.5px] text-neutral-900 shadow-sm transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 dark:bg-white/[0.08] dark:text-white dark:ring-1 dark:ring-white/10 dark:backdrop-blur-md dark:hover:bg-white/[0.13]"
+                    >
+                      {way.label}
+                      <span className="shrink-0 rounded-full bg-neutral-100 px-2.5 py-1 font-mono text-[11px] text-neutral-600 transition-colors group-hover:bg-neutral-900 group-hover:text-white dark:bg-white/10 dark:text-white/70 dark:group-hover:bg-white dark:group-hover:text-neutral-900">
+                        {way.action}
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        {/* How it pays for itself */}
+        <section className="px-5 py-24 sm:px-8 md:py-32">
+          <div className="mx-auto max-w-4xl text-center">
+            <h2 className="font-serif text-[clamp(1.875rem,4vw,2.75rem)] leading-[1.12] tracking-[-0.02em] text-balance text-foreground">Paid for by the people who use it</h2>
+            <p className="mx-auto mt-4 max-w-lg text-[15px] leading-relaxed text-muted-foreground">Not by advertising, and not by selling or training on what you save.</p>
+
+            <div className="mt-12 flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
+              {PAID_BY.map((plan) => (
+                <div key={plan.name} className="flex items-center gap-3.5 text-left">
+                  <span className="grid h-12 w-12 place-items-center rounded-xl bg-muted text-foreground ring-1 ring-foreground/[0.06]">
+                    <HugeiconsIcon icon={plan.icon} strokeWidth={1.75} className="h-5 w-5" />
+                  </span>
+                  <span>
+                    <span className="block font-serif text-lg leading-tight text-foreground">{plan.name}</span>
+                    <span className="block text-[13px] text-muted-foreground">{plan.what}</span>
+                  </span>
                 </div>
               ))}
-            </dl>
-          </div>
-        </section>
-
-        {/* 4. Where it stands, and who to talk to */}
-        <section id="now" className="scroll-mt-24 px-5 pb-20 sm:px-8 md:pb-28">
-          <div className="mx-auto max-w-6xl border-t border-foreground/15 pt-20 md:pt-28">
-            <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:gap-20">
-              <div>
-                <h2 className={H2}>Where it stands</h2>
-                <div className="mt-5 max-w-xl space-y-5 text-lg leading-relaxed text-pretty text-muted-foreground">
-                  <p>
-                    Savedly is new, made in Bengaluru, and built in the open. Everything that has shipped is on the changelog, with the date it went out. The browser extension is built and waiting for the Chrome Web
-                    Store to approve it.
-                  </p>
-                  <p>Ideas, bug reports and code are all welcome. The fastest way to shape what comes next is to tell us what you&apos;d use.</p>
-                </div>
-                <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3">
-                  <Link href="/changelog" className={LINK}>
-                    Read the changelog
-                  </Link>
-                  <Link href="/contribute" className={LINK}>
-                    Contribute
-                  </Link>
-                  <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className={LINK}>
-                    The code on GitHub
-                  </a>
-                </div>
-              </div>
-
-              <div className="self-center rounded-3xl bg-card p-6 ring-1 ring-foreground/[0.07] sm:p-7">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Talk to us</p>
-                <ul className="mt-4 divide-y divide-foreground/10">
-                  <li className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-3.5 first:pt-0">
-                    <span className="text-[15px] text-muted-foreground">Email</span>
-                    <a href={SUPPORT_MAILTO} className="text-[15px] font-medium text-foreground transition-colors hover:text-primary">
-                      {SUPPORT_EMAIL}
-                    </a>
-                  </li>
-                  <li className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-3.5">
-                    <span className="text-[15px] text-muted-foreground">A 30-minute call</span>
-                    <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="text-[15px] font-medium text-foreground transition-colors hover:text-primary">
-                      Pick a time
-                    </a>
-                  </li>
-                  <li className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-3.5 last:pb-0">
-                    <span className="text-[15px] text-muted-foreground">Something broken</span>
-                    <Link href="/report" className="text-[15px] font-medium text-foreground transition-colors hover:text-primary">
-                      Report a problem
-                    </Link>
-                  </li>
-                </ul>
-              </div>
             </div>
+
+            <Link href="/pricing" className={cn("mt-10 inline-block text-sm font-medium text-foreground", UNDERLINE)}>
+              See the plans
+            </Link>
           </div>
         </section>
-
-        <FinalCtaSection />
       </main>
 
       <MainFooter />
