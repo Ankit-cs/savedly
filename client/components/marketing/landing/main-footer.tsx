@@ -25,12 +25,11 @@ import {
 } from "@hugeicons/core-free-icons";
 import { Logo, LogoMark } from "@/components/logo";
 import { cn } from "@/lib/utils";
-import { GITHUB_CONFIGURED, GITHUB_URL, LICENSE } from "@/lib/open-source";
+import { DISCORD_URL, GITHUB_CONFIGURED, GITHUB_URL, LICENSE } from "@/lib/open-source";
 import { ProductHuntBadge } from "@/components/marketing/product-hunt-badge";
 import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/contact";
 
 /** The community server, the same invite the Community page links to. */
-const DISCORD_URL = "https://discord.gg/PzGFcMNyRK";
 
 // What is deliberately not here, because it would be fake:
 // - A newsletter form. Nothing in this codebase can subscribe an address, and
