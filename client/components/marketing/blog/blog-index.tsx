@@ -10,6 +10,7 @@ import { BlogGrid, type BlogPost } from "@/components/arc/blocks/blog-grid/blog-
 import { EmptyState } from "@/components/arc/empty-state/empty-state";
 import type { BlogPostSummary } from "@/lib/blog";
 import { DISCORD_URL } from "@/lib/open-source";
+import { blogAuthor } from "@/lib/blog-authors";
 
 // The blog's index. The opening line rises in (GSAP); the posts are Arc's
 // blog grid (a featured post, a topic filter with a gliding highlight, cards
@@ -31,7 +32,7 @@ function toGridPost(post: BlogPostSummary): BlogPost {
     category: post.tags[0] ?? "Notes",
     date: (post.publishedAt ?? post.updatedAt).slice(0, 10),
     readTime: post.readingMinutes,
-    author: { name: post.authorName ?? "The Savedly team" },
+    author: blogAuthor(post.authorName),
     // No cover, or one that won't load: the site's own share card, so no card is left half empty.
     image: { src: post.coverImageUrl ?? FALLBACK_COVER, alt: "" },
   };

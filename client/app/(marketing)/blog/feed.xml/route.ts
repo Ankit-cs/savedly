@@ -1,5 +1,6 @@
 import { getPublishedPosts } from "@/lib/blog";
 import { SITE_URL } from "@/lib/site-url";
+import { blogAuthor } from "@/lib/blog-authors";
 
 // The blog as an RSS 2.0 feed, for anyone who follows it in a reader. Built
 // from the same published posts as /blog, and refreshed as often (once a
@@ -21,7 +22,7 @@ export async function GET() {
         `      <guid isPermaLink="true">${url}</guid>`,
         post.publishedAt ? `      <pubDate>${new Date(post.publishedAt).toUTCString()}</pubDate>` : "",
         post.excerpt ? `      <description>${escape(post.excerpt)}</description>` : "",
-        post.authorName ? `      <dc:creator>${escape(post.authorName)}</dc:creator>` : "",
+        `      <dc:creator>${escape(blogAuthor(post.authorName).name)}</dc:creator>`,
         ...post.tags.map((tag) => `      <category>${escape(tag)}</category>`),
         "    </item>",
       ]
