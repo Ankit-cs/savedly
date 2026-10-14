@@ -106,7 +106,7 @@ export function WhatsNewDeck({ items, open, onOpenChange }: { items: WhatsNewCar
             if (event.key === "ArrowLeft") go(-1);
           }}
           // On a phone it sits at the bottom of the screen, like the app's sheets.
-          className="fixed top-1/2 left-1/2 z-[70] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 max-md:top-auto max-md:bottom-6 max-md:translate-y-0 outline-none duration-200 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95"
+          className="fixed top-1/2 left-1/2 z-[70] w-[calc(100%-2rem)] max-w-[38rem] -translate-x-1/2 -translate-y-1/2 max-md:top-auto max-md:bottom-6 max-md:translate-y-0 outline-none duration-200 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95"
         >
           <DialogPrimitive.Title className="sr-only">What&apos;s new in Savedly</DialogPrimitive.Title>
           <DialogPrimitive.Description className="sr-only">
