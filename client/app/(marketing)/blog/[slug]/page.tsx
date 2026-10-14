@@ -3,6 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/marketing/navbar";
 import MainFooter from "@/components/marketing/landing/main-footer";
+import { HeroReveal } from "@/components/marketing/motion/hero-reveal";
+import { Reveal, RevealList } from "@/components/marketing/motion/reveal";
+import { ReadingProgress } from "@/components/marketing/motion/reading-progress";
 import { PostBody } from "@/components/blog/post-body";
 import { formatPostDate, getPublishedPost, getPublishedPosts } from "@/lib/blog";
 import { SITE_URL } from "@/lib/site-url";
@@ -65,6 +68,7 @@ export default async function BlogPostPage({ params }: Props) {
       {/* "<" is escaped so a title can never close the script tag. */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <Navbar />
+      <ReadingProgress />
 
       <main className="flex-1 px-5 pt-32 pb-20 sm:px-8 md:pt-40 md:pb-28">
         <article className="mx-auto max-w-[44rem]">
@@ -72,7 +76,7 @@ export default async function BlogPostPage({ params }: Props) {
             ← All posts
           </Link>
 
-          <header className="mt-8">
+          <HeroReveal className="mt-8">
             {post.tags.length > 0 && <p className="text-sm font-medium text-primary">{post.tags.join(" · ")}</p>}
             <h1 className="mt-3 font-serif text-[clamp(2.2rem,5vw,3.5rem)] font-medium leading-[1.06] tracking-[-0.03em] text-balance text-foreground">{post.title}</h1>
             {post.excerpt && <p className="mt-5 text-xl leading-relaxed text-pretty text-muted-foreground">{post.excerpt}</p>}
@@ -89,20 +93,22 @@ export default async function BlogPostPage({ params }: Props) {
               </span>
               {post.readingMinutes} min read
             </p>
-          </header>
+          </HeroReveal>
 
+          <Reveal delay={0.4}>
           {post.coverImageUrl && (
             // eslint-disable-next-line @next/next/no-img-element -- an admin-supplied image from any host
             <img src={post.coverImageUrl} alt="" className="mt-10 aspect-[16/9] w-full rounded-2xl object-cover ring-1 ring-foreground/10" />
           )}
 
           <PostBody markdown={post.content} className="mt-10" />
+          </Reveal>
         </article>
 
         {more.length > 0 && (
           <aside className="mx-auto mt-20 max-w-6xl border-t border-foreground/15 pt-12" aria-label="More posts">
             <h2 className="font-serif text-2xl font-medium tracking-[-0.02em] text-foreground">More from the blog</h2>
-            <div className="mt-8 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+            <RevealList className="mt-8 grid gap-10 sm:grid-cols-2 lg:grid-cols-3" gap={0.08}>
               {more.map((p) => (
                 <Link key={p.id} href={`/blog/${p.slug}`} className="group block focus-visible:outline-none">
                   <h3 className="font-serif text-xl font-medium leading-snug tracking-[-0.015em] text-balance text-foreground underline decoration-transparent underline-offset-4 transition-colors group-hover:decoration-foreground/30 group-focus-visible:decoration-foreground/30">
@@ -112,7 +118,7 @@ export default async function BlogPostPage({ params }: Props) {
                   <p className="mt-3 text-sm text-muted-foreground">{formatPostDate(p.publishedAt)}</p>
                 </Link>
               ))}
-            </div>
+            </RevealList>
           </aside>
         )}
       </main>

@@ -3,6 +3,8 @@
 import { useState, type FormEvent } from "react";
 import { Navbar } from "@/components/marketing/navbar";
 import MainFooter from "@/components/marketing/landing/main-footer";
+import { HeroReveal } from "@/components/marketing/motion/hero-reveal";
+import { Reveal } from "@/components/marketing/motion/reveal";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { BugIcon as Bug, Idea01Icon as Lightbulb, SentIcon as Send } from "@hugeicons/core-free-icons";
 import { Button } from "@/components/ui/button";
@@ -59,7 +61,7 @@ export default function ReportPage() {
 
       <main className="flex-1 px-6 pt-32 pb-24">
         <div className="mx-auto max-w-xl">
-          <div className="mb-10 space-y-3 text-center">
+          <HeroReveal as="div" className="mb-10 space-y-3 text-center">
             <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold tracking-wider text-primary uppercase">
               Help us build it right
             </span>
@@ -70,8 +72,9 @@ export default function ReportPage() {
               Every report here goes straight into our tracker — the same one the
               team actually works from.
             </p>
-          </div>
+          </HeroReveal>
 
+          <Reveal delay={0.45}>
           {status === "done" ? (
             <div className="rounded-2xl border border-border bg-card p-8 text-center">
               <div className="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">✓</div>
@@ -168,6 +171,7 @@ export default function ReportPage() {
               </Button>
             </form>
           )}
+          </Reveal>
         </div>
       </main>
 

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Navbar } from "@/components/marketing/navbar";
 import MainFooter from "@/components/marketing/landing/main-footer";
+import { HeroReveal } from "@/components/marketing/motion/hero-reveal";
+import { Reveal, RevealList } from "@/components/marketing/motion/reveal";
 import { formatPostDate, getPublishedPosts, type BlogPostSummary } from "@/lib/blog";
 
 // The post list. Read on the server (lib/blog.ts), so the posts are in the
@@ -48,12 +50,12 @@ export default async function BlogPage() {
 
       <main className="flex-1 px-5 pt-36 pb-20 sm:px-8 md:pt-44 md:pb-28">
         <div className="mx-auto max-w-6xl">
-          <header className="grid gap-6 lg:grid-cols-[1fr_1fr] lg:items-end lg:gap-16">
+          <HeroReveal className="grid gap-6 lg:grid-cols-[1fr_1fr] lg:items-end lg:gap-16">
             <h1 className="font-serif text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[1.04] tracking-[-0.03em] text-foreground">Blog</h1>
             <p className="max-w-xl text-lg leading-relaxed text-pretty text-muted-foreground lg:justify-self-end">
               Notes from building Savedly: how it works, what changed, and what we learned along the way.
             </p>
-          </header>
+          </HeroReveal>
 
           {!latest ? (
             <div className="mt-16 border-t border-foreground/15 pt-16 text-center">
@@ -73,6 +75,7 @@ export default async function BlogPage() {
           ) : (
             <>
               {/* The newest post, large */}
+              <Reveal delay={0.3}>
               <article className="mt-14 border-t border-foreground/15 pt-12">
                 <Link href={`/blog/${latest.slug}`} className="group grid gap-8 focus-visible:outline-none lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-14">
                   <Cover post={latest} className="lg:order-2" />
@@ -88,9 +91,10 @@ export default async function BlogPage() {
                   </div>
                 </Link>
               </article>
+              </Reveal>
 
               {rest.length > 0 && (
-                <div className="mt-16 grid gap-x-10 gap-y-14 border-t border-foreground/15 pt-12 sm:grid-cols-2 lg:grid-cols-3">
+                <RevealList className="mt-16 grid gap-x-10 gap-y-14 border-t border-foreground/15 pt-12 sm:grid-cols-2 lg:grid-cols-3" gap={0.08}>
                   {rest.map((post) => (
                     <article key={post.id}>
                       <Link href={`/blog/${post.slug}`} className="group block focus-visible:outline-none">
@@ -105,7 +109,7 @@ export default async function BlogPage() {
                       </Link>
                     </article>
                   ))}
-                </div>
+                </RevealList>
               )}
             </>
           )}
