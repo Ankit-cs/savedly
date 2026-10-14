@@ -3,6 +3,7 @@
 // Changed locally for Savedly (re-installing overwrites this): a note shows
 // under every mark, not only partial ones, so "PIN-protected" or "AGPL-3.0"
 // stays visible beside a check.
+// The call to action is the brand blue (comparison-table.module.css), not black.
 
 import { useEffect, useId, useRef, useState } from "react";
 import type { CSSProperties } from "react";

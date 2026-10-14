@@ -9,9 +9,9 @@
 .filters { display: flex; gap: 2px; margin: 0 calc(var(--space-6) * -1); overflow-x: auto; padding: 0 var(--space-6); scrollbar-width: none; }
 .filters::-webkit-scrollbar { display: none; }
 .filter { position: relative; isolation: isolate; flex: none; height: 36px; border: 0; border-radius: var(--radius-pill); padding: 0 var(--space-4); background: none; color: var(--text-secondary); font: inherit; font-size: var(--arc-text-sm); font-weight: 500; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: color var(--duration-fast) var(--ease-standard); }
-.filter[aria-pressed="true"] { color: var(--background); }
+.filter[aria-pressed="true"] { color: var(--primary-foreground); }
 @media (hover: hover) and (pointer: fine) { .filter[aria-pressed="false"]:hover { color: var(--foreground); } }
-.filterHighlight { position: absolute; z-index: -1; inset: 0; border-radius: inherit; background: var(--foreground); }
+.filterHighlight { position: absolute; z-index: -1; inset: 0; border-radius: inherit; background: var(--primary); } /* Savedly: the brand blue, not Arc's foreground */
 
 /* Page and pagination share one measured box, so a shorter filter or page closes its gap on a spring. It only clips while it moves. */
 .clip { min-width: 0; }

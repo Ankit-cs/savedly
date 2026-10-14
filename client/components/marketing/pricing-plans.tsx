@@ -453,7 +453,7 @@ export function PricingPlans() {
 const buttonClass =
   "inline-flex h-11 w-full items-center justify-center gap-2 rounded-full px-5 text-[15px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:opacity-60";
 /** The one card the row is built around. */
-const strongButton = "bg-foreground text-background hover:bg-foreground/85";
+const strongButton = "bg-primary text-primary-foreground hover:bg-primary/90";
 const quietButton = "bg-foreground/[0.06] text-foreground hover:bg-foreground/10";
 
 interface CardRow {

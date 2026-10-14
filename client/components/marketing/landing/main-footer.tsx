@@ -198,7 +198,7 @@ function MarketingFooter() {
                   href={GITHUB_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex h-11 items-center gap-2 rounded-full bg-foreground px-5 text-sm font-medium text-background transition-colors hover:bg-foreground/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                  className="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                 >
                   Contribute on GitHub
                   <HugeiconsIcon icon={ArrowUpRight} strokeWidth={2} className="h-4 w-4" />
@@ -258,7 +258,7 @@ function MarketingFooter() {
             >
               <HugeiconsIcon icon={Mail} strokeWidth={2} className="h-4 w-4 shrink-0 text-muted-foreground" />
               <span className="min-w-0 flex-1 truncate">{SUPPORT_EMAIL}</span>
-              <span className="flex h-9 w-12 shrink-0 items-center justify-center rounded-full bg-foreground text-background transition-transform group-hover:translate-x-0.5">
+              <span className="flex h-9 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform group-hover:translate-x-0.5">
                 <HugeiconsIcon icon={ArrowRight} strokeWidth={2} className="h-4 w-4" />
               </span>
             </a>

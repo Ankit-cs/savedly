@@ -87,7 +87,7 @@ export function BlogIndex({ posts }: { posts: BlogPostSummary[] }) {
         <p className="text-[clamp(1.5rem,3vw,2rem)] font-medium tracking-[-0.03em] text-balance text-foreground">Get the next post when it&apos;s out</p>
         <p className="max-w-md text-[15px] leading-relaxed text-muted-foreground">Add the RSS feed to your reader, or join the Discord to talk about them.</p>
         <div className="mt-4 flex flex-wrap justify-center gap-3">
-          <a href="/blog/feed.xml" className="inline-flex h-11 items-center gap-2 rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-90">
+          <a href="/blog/feed.xml" className="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-6 text-[15px] font-medium text-primary-foreground transition-colors hover:bg-primary/90">
             <HugeiconsIcon icon={Rss} strokeWidth={2} className="h-4 w-4" />
             RSS feed
           </a>

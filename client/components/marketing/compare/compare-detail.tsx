@@ -83,7 +83,7 @@ export function CompareDetail({ slug }: { slug: string }) {
                 {them.name} has been around longer. Savedly is new, and everything it has shipped is on the changelog, with the date it went out.
               </motion.p>
               <motion.div variants={rise} className="mt-8 flex flex-wrap items-center justify-center gap-3">
-                <Link href={cta.href} className="inline-flex h-11 items-center rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-90">
+                <Link href={cta.href} className="inline-flex h-11 items-center rounded-full bg-primary px-6 text-[15px] font-medium text-primary-foreground transition-colors hover:bg-primary/90">
                   {cta.label}
                 </Link>
                 <Link href="/changelog" className="inline-flex h-11 items-center rounded-full px-6 text-[15px] font-medium text-foreground ring-1 ring-foreground/15 transition-colors hover:bg-foreground/5">

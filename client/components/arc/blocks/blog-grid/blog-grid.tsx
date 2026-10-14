@@ -3,6 +3,7 @@
 // Changed locally for Savedly (re-installing overwrites this): the reader
 // image set `transition` twice, which TypeScript rejects; it now comes from
 // one place, with the same result.
+// The selected filter is the brand blue (blog-grid.module.css), not black.
 /* eslint-disable @next/next/no-img-element -- plain images keep the block portable outside Next.js. */
 
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";

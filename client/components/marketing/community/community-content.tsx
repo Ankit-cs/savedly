@@ -101,7 +101,7 @@ export function CommunityContent() {
               <a
                 href={DISCORD_URL}
                 {...EXTERNAL}
-                className="inline-flex h-11 items-center gap-2 rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-90"
+                className="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-6 text-[15px] font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 Join the Discord
                 <HugeiconsIcon icon={ArrowUpRight} strokeWidth={2} className="h-4 w-4" />
@@ -123,7 +123,7 @@ export function CommunityContent() {
                   <a
                     href={DISCORD_URL}
                     {...EXTERNAL}
-                    className="mt-8 inline-flex h-11 items-center gap-2 rounded-full bg-white px-6 text-[15px] font-medium text-neutral-900 transition-opacity hover:opacity-90"
+                    className="mt-8 inline-flex h-11 items-center gap-2 rounded-full bg-primary px-6 text-[15px] font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                   >
                     Join the Discord
                     <HugeiconsIcon icon={ArrowUpRight} strokeWidth={2} className="h-4 w-4" />
