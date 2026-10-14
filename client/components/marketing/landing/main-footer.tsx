@@ -70,7 +70,7 @@ const sections: { title: string; links: FooterLink[] }[] = [
       { label: "Blog", href: "/blog" },
       { label: "Help Center", href: "/help" },
       { label: "Community", href: "/community" },
-      { label: "Report a bug", href: "/report" },
+      { label: "Report a bug or idea", href: "/report" },
       { label: "Cookie Policy", href: "/cookies" },
     ],
   },
@@ -79,6 +79,7 @@ const sections: { title: string; links: FooterLink[] }[] = [
     links: [
       { label: "About", href: "/about" },
       { label: "Contact", href: "/contact" },
+      { label: "Contribute", href: "/contribute" },
       { label: "Privacy", href: "/privacy" },
       { label: "Terms", href: "/terms" },
       { label: "Security", href: "/security" },
