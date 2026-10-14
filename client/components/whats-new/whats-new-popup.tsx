@@ -178,8 +178,9 @@ export function WhatsNewDeck({ items, open, onOpenChange }: { items: WhatsNewCar
 
               <div className="relative flex shrink-0 items-center justify-between gap-4 border-t border-white/10 bg-white/[0.03] px-5 py-3.5">
                 {items.length > 1 ? (
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex min-w-0 items-center gap-3">
+                    {/* A long tour's dots don't fit a phone; the count says it there. */}
+                    <div className="hidden items-center gap-1.5 sm:flex">
                       {items.map((entry, i) => (
                         <button
                           key={entry.id}
@@ -198,7 +199,7 @@ export function WhatsNewDeck({ items, open, onOpenChange }: { items: WhatsNewCar
                         </button>
                       ))}
                     </div>
-                    <span className="text-xs tabular-nums text-muted-foreground">
+                    <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
                       {index + 1} of {items.length}
                     </span>
                   </div>
